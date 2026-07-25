@@ -200,6 +200,35 @@ app.post('/v1/repositories/:id/execution-flows/:traceId/promote', (req, res) => 
   res.json({ message: 'Execution flow promoted to Code Story.' });
 });
 
+// --- Phase 6: Semantic Search & AI Config ---
+app.get('/v1/search/semantic', (req, res) => {
+  const { q, repositoryId } = req.query;
+  // Calls SemanticSearchService
+  res.json({
+    results: [
+      {
+        id: 'func-123',
+        name: 'validatePayload',
+        file: 'handler.ts',
+        similarity: 0.92,
+        snippet: 'function validatePayload(data) { ... }'
+      },
+      {
+        id: 'func-456',
+        name: 'processData',
+        file: 'handler.ts',
+        similarity: 0.85,
+        snippet: 'function processData(req) { ... }'
+      }
+    ]
+  });
+});
+
+app.patch('/v1/workspaces/:id/ai-config', (req, res) => {
+  const { provider } = req.body;
+  res.json({ message: `AI provider successfully switched to ${provider}.` });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`API Gateway listening on port ${PORT}`);

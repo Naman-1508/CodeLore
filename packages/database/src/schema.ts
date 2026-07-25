@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, boolean, pgEnum, integer, unique, numeric, AnyPgColumn } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, boolean, pgEnum, integer, unique, numeric, AnyPgColumn, vector } from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('role', ['owner', 'admin', 'member', 'viewer']);
 export const aiProviderStatusEnum = pgEnum('ai_provider_status', ['active', 'quota_exceeded', 'disabled', 'error']);
@@ -85,6 +85,7 @@ export const functions = pgTable('function', {
   complexityScore: numeric('complexity_score').default('0'),
   isEntryPoint: boolean('is_entry_point').default(false).notNull(),
   docstring: text('docstring'),
+  embedding: vector('embedding', { dimensions: 1536 }),
 });
 
 export const callEdges = pgTable('call_edge', {

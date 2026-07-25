@@ -1,0 +1,1 @@
+ALTER TABLE "function" ADD COLUMN "embedding" vector(1536);

@@ -317,26 +317,48 @@ const ArchitectureReplay = () => {
   )
 }
 
-const WorkspaceSettings = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold mb-6">Workspace Settings</h1>
-    <div className="bg-white border rounded-lg p-6 shadow-sm">
-      <h2 className="text-xl font-semibold mb-4">AI Provider Configuration</h2>
-      <p className="text-gray-600 mb-4">Configure your LLM provider for the AI Enrichment Layer.</p>
-      <div className="flex flex-col gap-4 max-w-md">
-        <label className="flex flex-col gap-1">
-          <span className="font-medium text-sm text-gray-700">Provider</span>
-          <select className="border rounded p-2 bg-gray-50">
-            <option>None (AI Disabled)</option>
-            <option>Anthropic</option>
-            <option>OpenAI</option>
-          </select>
-        </label>
-        <button className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 transition mt-2 self-start">Save Settings</button>
+const WorkspaceSettings = () => {
+  const [provider, setProvider] = useState('groq');
+  
+  return (
+    <div className="p-8" role="main" aria-label="Workspace Settings">
+      <h1 className="text-3xl font-bold mb-6">Workspace Settings</h1>
+      <div className="bg-white border rounded-lg p-6 shadow-sm mb-6">
+        <h2 className="text-xl font-semibold mb-4">AI Provider Configuration</h2>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="provider-select" className="block text-sm font-medium text-gray-700 mb-1">Active AI Provider</label>
+            <select 
+              id="provider-select"
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+              className="w-full max-w-md p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 bg-white"
+              aria-label="Select active AI provider"
+            >
+              <option value="groq">Groq (Fast, Free)</option>
+              <option value="gemini">Google Gemini (Advanced, Semantic Search)</option>
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="api-key" className="block text-sm font-medium text-gray-700 mb-1">{provider === 'groq' ? 'Groq' : 'Gemini'} API Key</label>
+            <input 
+              id="api-key"
+              type="password" 
+              className="w-full max-w-md p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={provider === 'groq' ? "gsk_..." : "AIza..."}
+              defaultValue="mock_key_for_demo"
+              aria-label={`Enter ${provider} API Key`}
+            />
+          </div>
+          <button className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition" aria-label="Save provider configuration">
+            Save Configuration
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 const EngineeringMentor = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -402,26 +424,35 @@ const EngineeringMentor = () => {
 }
 
 const Layout = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen flex flex-col bg-white text-gray-900 font-sans relative">
-    <header className="flex justify-between items-center p-4 border-b bg-gray-50">
+  <div className="min-h-screen flex flex-col bg-white text-gray-900 font-sans relative" aria-label="Main application layout">
+    <header className="flex justify-between items-center p-4 border-b bg-gray-50" role="banner">
       <div className="flex items-center gap-6">
-        <span className="font-bold text-xl tracking-tight text-blue-700">CodeLore</span>
-        <nav className="flex gap-4">
-          <Link to="/" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition">
-            <LayoutDashboard size={18} /> Dashboard
+        <span className="font-bold text-xl tracking-tight text-blue-700" aria-hidden="true">CodeLore</span>
+        <nav className="flex gap-4" aria-label="Main navigation">
+          <Link to="/" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition" aria-label="Go to Dashboard">
+            <LayoutDashboard size={18} aria-hidden="true" /> Dashboard
           </Link>
-          <Link to="/functions" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition">
-            <Code size={18} /> Explorer
+          <Link to="/functions" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition" aria-label="Go to Explorer">
+            <Code size={18} aria-hidden="true" /> Explorer
           </Link>
-          <Link to="/architect" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition">
-            <Activity size={18} /> Architect Mode
+          <Link to="/architect" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition" aria-label="Go to Architect Mode">
+            <Activity size={18} aria-hidden="true" /> Architect Mode
           </Link>
-          <Link to="/settings" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition">
-            <Settings size={18} /> Settings
+          <Link to="/settings" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition" aria-label="Go to Settings">
+            <Settings size={18} aria-hidden="true" /> Settings
           </Link>
         </nav>
       </div>
-      <div>
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <Search size={16} className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" aria-hidden="true" />
+          <input 
+            type="text" 
+            placeholder="Semantic Search..." 
+            aria-label="Search the codebase using natural language"
+            className="pl-8 pr-4 py-1.5 border rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 shadow-sm"
+          />
+        </div>
         <UserButton afterSignOutUrl="/" />
       </div>
     </header>
