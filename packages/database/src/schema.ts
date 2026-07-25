@@ -133,3 +133,27 @@ export const commitFileChanges = pgTable('commit_file_change', {
   linesAdded: integer('lines_added').default(0).notNull(),
   linesRemoved: integer('lines_removed').default(0).notNull(),
 });
+
+export const healthSnapshots = pgTable('health_snapshot', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  repositoryId: uuid('repository_id').references(() => repositories.id).notNull(),
+  timestamp: timestamp('timestamp', { withTimezone: true }).defaultNow().notNull(),
+  score: integer('score').notNull(), // 0-100
+  metricsJson: text('metrics_json').notNull(), // JSON string for detailed metrics
+});
+
+export const codeStories = pgTable('code_story', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  repositoryId: uuid('repository_id').references(() => repositories.id).notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  entryFunctionId: uuid('entry_function_id').references(() => functions.id).notNull(),
+});
+
+export const codeStorySteps = pgTable('code_story_step', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  codeStoryId: uuid('code_story_id').references(() => codeStories.id).notNull(),
+  order: integer('order').notNull(),
+  functionId: uuid('function_id').references(() => functions.id).notNull(),
+  narration: text('narration').notNull(), // AI or deterministic narration
+});

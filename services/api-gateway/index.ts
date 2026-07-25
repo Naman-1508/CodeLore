@@ -104,6 +104,55 @@ app.get('/v1/repositories/:id/ownership', (req, res) => {
   }
 });
 
+// --- Repository Health & Code Stories Routes (Phase 3) ---
+app.get('/v1/repositories/:id/overview', (req, res) => {
+  res.json({
+    id: req.params.id,
+    moduleCount: 15,
+    entryPoints: 3,
+    topModules: ['auth', 'database', 'api']
+  });
+});
+
+app.get('/v1/repositories/:id/health', (req, res) => {
+  res.json({
+    currentScore: 85,
+    trends: [70, 75, 78, 80, 85],
+    metrics: { circularDependencies: 0, highlyCoupledModules: 1, deadCodeFunctions: 2 }
+  });
+});
+
+app.get('/v1/repositories/:id/code-stories', (req, res) => {
+  res.json([
+    {
+      id: 'story-1',
+      title: 'processData Flow',
+      description: 'Auto-generated baseline sequence for processData',
+      stepsCount: 3
+    }
+  ]);
+});
+
+app.get('/v1/repositories/:id/code-stories/:storyId', (req, res) => {
+  res.json({
+    id: req.params.storyId,
+    title: 'processData Flow',
+    steps: [
+      { order: 1, narration: "The flow begins at the entry point 'processData', which handles the initial request." },
+      { order: 2, narration: "It then calls a validation function to verify the payload." },
+      { order: 3, narration: "Finally, it interacts with the database to persist the changes." }
+    ]
+  });
+});
+
+app.get('/v1/search', (req, res) => {
+  const { q } = req.query;
+  res.json([
+    { type: 'symbol', name: 'processData', file: 'file-1.ts' },
+    { type: 'file', name: 'auth.ts', path: 'src/auth.ts' }
+  ]);
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`API Gateway listening on port ${PORT}`);
