@@ -1,6 +1,6 @@
 import { ClerkProvider, SignIn, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
-import { LayoutDashboard, Settings, Code, GitMerge } from 'lucide-react'
+import { LayoutDashboard, Settings, Code, GitMerge, Activity, AlertTriangle, Users } from 'lucide-react'
 
 // Import your publishable key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
@@ -34,9 +34,14 @@ const FunctionExplorer = () => (
             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Entry Point</span>
           </div>
           <p className="text-gray-500 text-sm truncate">file-1.ts:L10-25</p>
-          <Link to="/functions/fn-1/blast-radius" className="mt-2 text-sm text-blue-500 hover:underline flex items-center gap-1">
-            <GitMerge size={14} /> View Blast Radius
-          </Link>
+          <div className="flex gap-4 mt-2">
+            <Link to="/functions/fn-1/blast-radius" className="text-sm text-blue-500 hover:underline flex items-center gap-1">
+              <GitMerge size={14} /> Blast Radius
+            </Link>
+            <span className="text-sm text-purple-500 flex items-center gap-1" title="Top Contributor: Alice (75%)">
+              <Users size={14} /> Alice
+            </span>
+          </div>
         </div>
         <div className="border rounded p-4 flex flex-col gap-2">
           <div className="flex justify-between items-center">
@@ -84,6 +89,38 @@ const BlastRadius = () => (
   </div>
 )
 
+const ArchitectMode = () => (
+  <div className="p-8">
+    <h1 className="text-3xl font-bold mb-6">Architect Findings</h1>
+    <div className="bg-white border rounded-lg p-6 shadow-sm">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Deterministic Code Anomalies</h2>
+        <span className="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full font-medium">2 Findings</span>
+      </div>
+      
+      <div className="space-y-4">
+        <div className="border border-red-200 bg-red-50 rounded p-4 flex items-start gap-4">
+          <AlertTriangle className="text-red-500 mt-1" size={24} />
+          <div>
+            <h3 className="font-bold text-red-800">Highly Coupled Modules</h3>
+            <p className="text-red-600 text-sm mt-1">Files <code className="bg-red-100 px-1">src/auth.ts</code> and <code className="bg-red-100 px-1">src/session.ts</code> change together in 90% of commits.</p>
+            <button className="mt-3 text-xs bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">View Git History</button>
+          </div>
+        </div>
+
+        <div className="border border-yellow-200 bg-yellow-50 rounded p-4 flex items-start gap-4">
+          <Activity className="text-yellow-500 mt-1" size={24} />
+          <div>
+            <h3 className="font-bold text-yellow-800">Circular Dependency</h3>
+            <p className="text-yellow-700 text-sm mt-1">Circular dependency detected between <code className="bg-yellow-100 px-1">src/models/user.ts</code> and <code className="bg-yellow-100 px-1">src/models/workspace.ts</code></p>
+            <button className="mt-3 text-xs bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700">View Call Graph</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
 const WorkspaceSettings = () => (
   <div className="p-8">
     <h1 className="text-3xl font-bold mb-6">Workspace Settings</h1>
@@ -116,6 +153,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
           </Link>
           <Link to="/functions" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition">
             <Code size={18} /> Explorer
+          </Link>
+          <Link to="/architect" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition">
+            <Activity size={18} /> Architect Mode
           </Link>
           <Link to="/settings" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition">
             <Settings size={18} /> Settings
@@ -151,6 +191,7 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/settings" element={<WorkspaceSettings />} />
               <Route path="/functions" element={<FunctionExplorer />} />
+              <Route path="/architect" element={<ArchitectMode />} />
               <Route path="/functions/:id/blast-radius" element={<BlastRadius />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

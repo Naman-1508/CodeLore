@@ -94,3 +94,42 @@ export const callEdges = pgTable('call_edge', {
   calleeFunctionId: uuid('callee_function_id').references(() => functions.id).notNull(),
   callCount: integer('call_count').default(1).notNull(),
 });
+
+export const dependencyTypeEnum = pgEnum('dependency_type', ['runtime', 'dev', 'internal']);
+
+export const dependencies = pgTable('dependency', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  repositoryId: uuid('repository_id').references(() => repositories.id).notNull(),
+  sourceModule: text('source_module').notNull(),
+  targetModule: text('target_module').notNull(),
+  dependencyType: dependencyTypeEnum('dependency_type').notNull(),
+  isCircular: boolean('is_circular').default(false).notNull(),
+  couplingStrength: numeric('coupling_strength').default('0'),
+}, (t) => ({
+  unqSourceTarget: unique().on(t.repositoryId, t.sourceModule, t.targetModule),
+}));
+
+export const gitCommits = pgTable('git_commit', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  repositoryId: uuid('repository_id').references(() => repositories.id).notNull(),
+  sha: text('sha').notNull(),
+  authorEmail: text('author_email').notNull(),
+  authorName: text('author_name').notNull(),
+  committedAt: timestamp('committed_at', { withTimezone: true }).notNull(),
+  message: text('message').notNull(),
+  additions: integer('additions').default(0).notNull(),
+  deletions: integer('deletions').default(0).notNull(),
+}, (t) => ({
+  unqRepoSha: unique().on(t.repositoryId, t.sha),
+}));
+
+export const changeTypeEnum = pgEnum('change_type', ['added', 'modified', 'deleted', 'renamed']);
+
+export const commitFileChanges = pgTable('commit_file_change', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  gitCommitId: uuid('git_commit_id').references(() => gitCommits.id).notNull(),
+  fileId: uuid('file_id').references(() => files.id).notNull(),
+  changeType: changeTypeEnum('change_type').notNull(),
+  linesAdded: integer('lines_added').default(0).notNull(),
+  linesRemoved: integer('lines_removed').default(0).notNull(),
+});

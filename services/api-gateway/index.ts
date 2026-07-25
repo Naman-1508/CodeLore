@@ -72,6 +72,38 @@ app.get('/v1/functions/:id/blast-radius', (req, res) => {
   });
 });
 
+// --- Architect Findings & Git Signals Routes (Phase 2) ---
+app.get('/v1/repositories/:id/architect-findings', (req, res) => {
+  // TODO: Query precomputed findings (co-change clusters, dead code)
+  res.json([
+    {
+      id: 'finding-1',
+      type: 'highly_coupled',
+      description: 'Files src/auth.ts and src/session.ts change together in 90% of commits.',
+      severity: 'high'
+    },
+    {
+      id: 'finding-2',
+      type: 'circular_dependency',
+      description: 'Circular dependency detected between src/models/user.ts and src/models/workspace.ts',
+      severity: 'medium'
+    }
+  ]);
+});
+
+app.get('/v1/repositories/:id/ownership', (req, res) => {
+  const { fileId } = req.query;
+  // TODO: Query ownership table/heuristics for a specific file
+  if (fileId) {
+    res.json([
+      { author: 'Alice', percentage: 75 },
+      { author: 'Bob', percentage: 25 }
+    ]);
+  } else {
+    res.json([]);
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`API Gateway listening on port ${PORT}`);
