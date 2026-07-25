@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "npx concurrently \"npm run dev --workspace=apps/web\" \"npm run dev --workspace=services/api-gateway\" \"npm run dev --workspace=services/core-engine/parser-service\"",
+    "turbo:dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"
@@ -24,6 +25,8 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "services/*",
+    "services/core-engine/*"
   ]
 }
