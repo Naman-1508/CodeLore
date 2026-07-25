@@ -1,0 +1,18 @@
+{
+  "name": "@repo/parser-service",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-typescript": "^0.23.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3"
+  }
+}
