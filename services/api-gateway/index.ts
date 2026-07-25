@@ -153,6 +153,24 @@ app.get('/v1/search', (req, res) => {
   ]);
 });
 
+// --- AI Enrichment & Engineering Mentor Routes (Phase 4) ---
+app.post('/v1/ai/generate-docstrings', (req, res) => {
+  // TODO: Insert a job into the background_job table
+  res.json({ message: 'Docstring generation job queued successfully.' });
+});
+
+app.post('/v1/ai/chat', (req, res) => {
+  const { message, repositoryId } = req.body;
+  // TODO: Call MentorOrchestrator in parser-service
+  res.json({
+    text: `Based on the context: The function processData handles the initial request.`,
+    factChips: [
+      { type: 'function', name: 'processData' },
+      { type: 'file', name: 'handler.ts' }
+    ]
+  });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`API Gateway listening on port ${PORT}`);

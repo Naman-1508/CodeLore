@@ -157,3 +157,28 @@ export const codeStorySteps = pgTable('code_story_step', {
   functionId: uuid('function_id').references(() => functions.id).notNull(),
   narration: text('narration').notNull(), // AI or deterministic narration
 });
+
+export const backgroundJobs = pgTable('background_job', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  type: text('type').notNull(), // e.g. 'generate_docstring'
+  payload: text('payload').notNull(), // JSON string
+  status: text('status').default('pending').notNull(), // pending, processing, completed, failed
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const chatSessions = pgTable('chat_session', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  repositoryId: uuid('repository_id').references(() => repositories.id).notNull(),
+  title: text('title').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const chatMessages = pgTable('chat_message', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').references(() => chatSessions.id).notNull(),
+  role: text('role').notNull(), // 'user' | 'assistant' | 'system'
+  content: text('content').notNull(),
+  factChipsJson: text('fact_chips_json'), // JSON string of referenced files/functions
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});

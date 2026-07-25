@@ -1,6 +1,7 @@
 import { ClerkProvider, SignIn, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
-import { LayoutDashboard, Settings, Code, GitMerge, Activity, AlertTriangle, Users, Search, BookOpen, ChevronRight, ChevronLeft } from 'lucide-react'
+import { LayoutDashboard, Settings, Code, GitMerge, Activity, AlertTriangle, Users, Search, BookOpen, ChevronRight, ChevronLeft, Bot, Sparkles, Send, X } from 'lucide-react'
+import React, { useState } from 'react'
 
 // Import your publishable key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
@@ -130,31 +131,43 @@ const FunctionExplorer = () => (
     <h1 className="text-3xl font-bold mb-6">Function Explorer</h1>
     <div className="bg-white border rounded-lg p-6 shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Functions</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {/* Mock Function List */}
-        <div className="border rounded p-4 flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <span className="font-mono text-sm font-bold text-blue-600">processData</span>
+        <div className="border rounded p-4 flex flex-col gap-2 relative">
+          <div className="absolute top-4 right-4 flex gap-2">
             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Entry Point</span>
           </div>
-          <p className="text-gray-500 text-sm truncate">file-1.ts:L10-25</p>
-          <div className="flex gap-4 mt-2">
+          <div>
+            <span className="font-mono text-lg font-bold text-blue-600">processData</span>
+            <span className="text-gray-400 text-sm ml-2">file-1.ts:L10-25</span>
+          </div>
+          <p className="text-gray-700 text-sm bg-gray-50 p-2 rounded border border-gray-100 flex items-start gap-2">
+            <Sparkles className="text-purple-500 mt-0.5" size={14} />
+            Validates the incoming payload against the schema and handles the initial request.
+          </p>
+          <div className="flex gap-4 mt-2 pt-2 border-t border-gray-100">
             <Link to="/functions/fn-1/blast-radius" className="text-sm text-blue-500 hover:underline flex items-center gap-1">
               <GitMerge size={14} /> Blast Radius
             </Link>
-            <span className="text-sm text-purple-500 flex items-center gap-1" title="Top Contributor: Alice (75%)">
-              <Users size={14} /> Alice
+            <span className="text-sm text-gray-500 flex items-center gap-1" title="Top Contributor: Alice (75%)">
+              <Users size={14} /> Alice (75%)
             </span>
           </div>
         </div>
-        <div className="border rounded p-4 flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <span className="font-mono text-sm font-bold text-blue-600">helperFunction</span>
+        <div className="border rounded p-4 flex flex-col gap-2 relative">
+          <div>
+            <span className="font-mono text-lg font-bold text-blue-600">helperFunction</span>
+            <span className="text-gray-400 text-sm ml-2">file-1.ts:L30-45</span>
           </div>
-          <p className="text-gray-500 text-sm truncate">file-1.ts:L30-45</p>
-          <Link to="/functions/fn-2/blast-radius" className="mt-2 text-sm text-blue-500 hover:underline flex items-center gap-1">
-            <GitMerge size={14} /> View Blast Radius
-          </Link>
+          <p className="text-gray-700 text-sm bg-gray-50 p-2 rounded border border-gray-100 flex items-start gap-2">
+            <Sparkles className="text-purple-500 mt-0.5" size={14} />
+            Computes the hash of the payload string for validation.
+          </p>
+          <div className="flex gap-4 mt-2 pt-2 border-t border-gray-100">
+            <Link to="/functions/fn-2/blast-radius" className="text-sm text-blue-500 hover:underline flex items-center gap-1">
+              <GitMerge size={14} /> Blast Radius
+            </Link>
+          </div>
         </div>
       </div>
     </div>
@@ -246,8 +259,71 @@ const WorkspaceSettings = () => (
   </div>
 )
 
+const EngineeringMentor = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <>
+      {/* Floating Action Button */}
+      <button 
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 bg-purple-600 text-white p-4 rounded-full shadow-lg hover:bg-purple-700 transition flex items-center justify-center z-40"
+      >
+        <Bot size={24} />
+      </button>
+
+      {/* Slide-out Panel */}
+      {isOpen && (
+        <div className="fixed top-0 right-0 h-full w-96 bg-white shadow-2xl border-l z-50 flex flex-col transform transition-transform duration-300">
+          <div className="flex justify-between items-center p-4 border-b bg-gray-50">
+            <div className="flex items-center gap-2 text-purple-700">
+              <Sparkles size={20} />
+              <h2 className="font-bold">Engineering Mentor</h2>
+            </div>
+            <button onClick={() => setIsOpen(false)} className="text-gray-500 hover:text-gray-800">
+              <X size={20} />
+            </button>
+          </div>
+          
+          <div className="flex-grow p-4 overflow-y-auto bg-gray-50 flex flex-col gap-4">
+            <div className="self-end bg-blue-600 text-white p-3 rounded-lg rounded-tr-none text-sm max-w-[85%] shadow-sm">
+              How does processData work?
+            </div>
+            <div className="self-start bg-white border p-3 rounded-lg rounded-tl-none text-sm text-gray-800 max-w-[95%] shadow-sm">
+              <p>Based on the context: The function processData handles the initial request and calls validatePayload.</p>
+              
+              <div className="mt-3 pt-3 border-t flex flex-wrap gap-2">
+                <span className="text-[10px] uppercase font-bold text-gray-400 w-full">Fact Chips</span>
+                <span className="flex items-center gap-1 bg-gray-100 border text-gray-700 px-2 py-1 rounded text-xs font-mono">
+                  <Code size={10} /> processData
+                </span>
+                <span className="flex items-center gap-1 bg-blue-50 border border-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-mono">
+                  <BookOpen size={10} /> handler.ts
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-4 border-t bg-white">
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder="Ask a question about the code..." 
+                className="w-full pr-10 pl-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+              />
+              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 text-purple-600 hover:text-purple-800">
+                <Send size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 const Layout = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen flex flex-col bg-white text-gray-900 font-sans">
+  <div className="min-h-screen flex flex-col bg-white text-gray-900 font-sans relative">
     <header className="flex justify-between items-center p-4 border-b bg-gray-50">
       <div className="flex items-center gap-6">
         <span className="font-bold text-xl tracking-tight text-blue-700">CodeLore</span>
@@ -273,6 +349,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
     <main className="flex-grow">
       {children}
     </main>
+    <EngineeringMentor />
   </div>
 )
 
