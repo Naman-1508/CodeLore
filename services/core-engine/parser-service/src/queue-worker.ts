@@ -41,4 +41,21 @@ export class PostgresQueueWorker {
       // Simulate UPDATE background_job SET status = 'failed' WHERE id = jobId
     }
   }
+
+  async processAiNarrationJob(jobId: string, targetType: string, targetId: string, contextFacts: string[]) {
+    console.log(`[QueueWorker] Processing AI narration for ${targetType} ${targetId}`);
+    let narrationText = '';
+    let fallbackUsed = false;
+    try {
+      const messages = [{ role: 'user', content: `Narrate this ${targetType} clearly.` }];
+      narrationText = await this.llm.chat(messages, contextFacts);
+    } catch (e) {
+      console.error(`[QueueWorker] LLM failed, using deterministic fallback for ${targetId}`, e);
+      fallbackUsed = true;
+      narrationText = `Deterministic Fallback: This is a ${targetType}.`;
+    }
+    
+    // Simulate inserting into ai_narration table
+    console.log(`[QueueWorker] Saved narration (fallback=${fallbackUsed}): ${narrationText}`);
+  }
 }

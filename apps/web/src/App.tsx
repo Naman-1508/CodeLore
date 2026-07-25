@@ -1,6 +1,6 @@
 import { ClerkProvider, SignIn, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
-import { LayoutDashboard, Settings, Code, GitMerge, Activity, AlertTriangle, Users, Search, BookOpen, ChevronRight, ChevronLeft, Bot, Sparkles, Send, X } from 'lucide-react'
+import { LayoutDashboard, Settings, Code, GitMerge, Activity, AlertTriangle, Users, Search, BookOpen, ChevronRight, ChevronLeft, Bot, Sparkles, Send, X, Play, Rewind, FastForward, Edit3 } from 'lucide-react'
 import React, { useState } from 'react'
 
 // Import your publishable key
@@ -52,7 +52,12 @@ const Dashboard = () => (
       </div>
     </div>
 
-    <h2 className="text-2xl font-bold mb-4">Code Stories</h2>
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-2xl font-bold">Code Stories</h2>
+      <Link to="/stories/author" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+        <Edit3 size={16} /> Author New Story
+      </Link>
+    </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Link to="/stories/story-1" className="block bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition">
         <div className="flex items-start gap-3">
@@ -208,7 +213,12 @@ const BlastRadius = () => (
 
 const ArchitectMode = () => (
   <div className="p-8">
-    <h1 className="text-3xl font-bold mb-6">Architect Findings</h1>
+    <div className="flex justify-between items-center mb-6">
+      <h1 className="text-3xl font-bold">Architect Findings</h1>
+      <Link to="/architect/replay" className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition flex items-center gap-2">
+        <Play size={18} /> Architecture Replay
+      </Link>
+    </div>
     <div className="bg-white border rounded-lg p-6 shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Deterministic Code Anomalies</h2>
@@ -221,6 +231,10 @@ const ArchitectMode = () => (
           <div>
             <h3 className="font-bold text-red-800">Highly Coupled Modules</h3>
             <p className="text-red-600 text-sm mt-1">Files <code className="bg-red-100 px-1">src/auth.ts</code> and <code className="bg-red-100 px-1">src/session.ts</code> change together in 90% of commits.</p>
+            <p className="text-sm mt-2 p-2 bg-white rounded border border-red-100 flex items-start gap-2">
+              <Sparkles className="text-purple-500 mt-0.5 shrink-0" size={14} />
+              <span className="text-gray-700">The high coupling suggests these files should be merged or depend on a shared interface to prevent fragile updates.</span>
+            </p>
             <button className="mt-3 text-xs bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">View Git History</button>
           </div>
         </div>
@@ -230,6 +244,10 @@ const ArchitectMode = () => (
           <div>
             <h3 className="font-bold text-yellow-800">Circular Dependency</h3>
             <p className="text-yellow-700 text-sm mt-1">Circular dependency detected between <code className="bg-yellow-100 px-1">src/models/user.ts</code> and <code className="bg-yellow-100 px-1">src/models/workspace.ts</code></p>
+            <p className="text-sm mt-2 p-2 bg-white rounded border border-yellow-100 flex items-start gap-2">
+              <Sparkles className="text-purple-500 mt-0.5 shrink-0" size={14} />
+              <span className="text-gray-700">The circular dependency prevents independent deployment. To fix, extract shared types to a new module.</span>
+            </p>
             <button className="mt-3 text-xs bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700">View Call Graph</button>
           </div>
         </div>
@@ -237,6 +255,67 @@ const ArchitectMode = () => (
     </div>
   </div>
 )
+
+const ArchitectureReplay = () => {
+  const [timelineIndex, setTimelineIndex] = useState(1);
+  const totalSnapshots = 5;
+  
+  return (
+    <div className="flex flex-col h-[calc(100vh-65px)] bg-gray-50">
+      <div className="p-6 pb-0 flex justify-between items-center">
+        <div>
+          <Link to="/architect" className="text-sm text-gray-500 hover:text-gray-800 mb-2 inline-block">← Back to Architect Mode</Link>
+          <h1 className="text-2xl font-bold">Architecture Replay</h1>
+        </div>
+        <div className="bg-white px-4 py-2 rounded shadow-sm border font-mono text-sm text-gray-600">
+          Commit: a1b2c3d (Jan 1, 2023)
+        </div>
+      </div>
+      
+      {/* Visualization Canvas */}
+      <div className="flex-grow p-6 m-6 bg-white border rounded-lg shadow-inner flex items-center justify-center relative overflow-hidden">
+        <div className="text-center text-gray-400">
+          <p className="mb-4">Historical Module Map rendering...</p>
+          <div className="flex gap-4 justify-center">
+            <div className="w-32 h-32 bg-blue-100 border-2 border-blue-400 rounded-lg flex items-center justify-center text-blue-800 font-bold transition-all duration-500">api</div>
+            {timelineIndex > 2 && <div className="w-32 h-32 bg-green-100 border-2 border-green-400 rounded-lg flex items-center justify-center text-green-800 font-bold shadow-lg transform transition-all duration-500 scale-110">auth</div>}
+            <div className="w-32 h-32 bg-purple-100 border-2 border-purple-400 rounded-lg flex items-center justify-center text-purple-800 font-bold transition-all duration-500">database</div>
+          </div>
+        </div>
+        
+        {/* AI Narration Overlay */}
+        {timelineIndex === 3 && (
+          <div className="absolute top-8 right-8 w-80 bg-white shadow-xl rounded-lg border-l-4 border-purple-500 p-4 animate-fade-in">
+            <div className="flex items-center gap-2 mb-2 text-purple-700">
+              <Sparkles size={16} /> <span className="font-bold text-sm uppercase tracking-wider">Significant Transition</span>
+            </div>
+            <p className="text-sm text-gray-700">Between December and January, the <strong>auth</strong> module was extracted from <strong>api</strong> to support external SSO integrations.</p>
+          </div>
+        )}
+      </div>
+      
+      {/* Timeline Scrubber */}
+      <div className="bg-white p-6 border-t shadow-lg flex items-center gap-6">
+        <button className="p-2 rounded-full hover:bg-gray-100 text-gray-600" onClick={() => setTimelineIndex(Math.max(1, timelineIndex - 1))}><Rewind size={20} /></button>
+        <button className="p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 shadow"><Play size={24} fill="currentColor" /></button>
+        <button className="p-2 rounded-full hover:bg-gray-100 text-gray-600" onClick={() => setTimelineIndex(Math.min(totalSnapshots, timelineIndex + 1))}><FastForward size={20} /></button>
+        
+        <div className="flex-grow flex items-center gap-4 px-4">
+          <span className="text-xs text-gray-500 font-mono">Oldest</span>
+          <input 
+            type="range" 
+            min="1" 
+            max={totalSnapshots} 
+            value={timelineIndex} 
+            onChange={(e) => setTimelineIndex(parseInt(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+          <span className="text-xs text-gray-500 font-mono">Newest</span>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const WorkspaceSettings = () => (
   <div className="p-8">
@@ -375,6 +454,28 @@ function App() {
               <Route path="/architect" element={<ArchitectMode />} />
               <Route path="/functions/:id/blast-radius" element={<BlastRadius />} />
               <Route path="/stories/:id" element={<CodeStoryViewer />} />
+              <Route path="/stories/author" element={
+                <div className="p-8 max-w-2xl mx-auto">
+                  <h1 className="text-3xl font-bold mb-6">Author Code Story</h1>
+                  <div className="bg-white p-6 rounded-lg border shadow-sm">
+                    <input type="text" placeholder="Story Title" className="w-full text-xl font-bold mb-4 p-2 border-b focus:outline-none focus:border-blue-500" />
+                    <textarea placeholder="Description" className="w-full mb-6 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3}></textarea>
+                    
+                    <h3 className="font-semibold mb-3">Steps</h3>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 border rounded">
+                        <span className="bg-gray-200 text-gray-700 px-2 rounded font-bold text-sm">1</span>
+                        <input type="text" placeholder="Function Name" className="p-1 border rounded text-sm w-48 font-mono" />
+                        <input type="text" placeholder="Narration (optional)" className="p-1 border rounded text-sm flex-grow" />
+                      </div>
+                      <button className="text-blue-600 text-sm font-medium hover:underline">+ Add Step</button>
+                    </div>
+                    
+                    <button className="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700">Save Story</button>
+                  </div>
+                </div>
+              } />
+              <Route path="/architect/replay" element={<ArchitectureReplay />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>

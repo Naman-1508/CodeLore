@@ -171,6 +171,35 @@ app.post('/v1/ai/chat', (req, res) => {
   });
 });
 
+// --- Architecture Replay & AI Narration Routes (Phase 5) ---
+app.get('/v1/repositories/:id/architecture-replay/snapshots', (req, res) => {
+  // Returns chronological structural snapshots
+  res.json([
+    { commit: 'a1b2c3d', timestamp: '2023-01-01', moduleCount: 5 },
+    { commit: 'e5f6g7h', timestamp: '2023-06-01', moduleCount: 8 }
+  ]);
+});
+
+app.get('/v1/repositories/:id/architecture-replay/transitions', (req, res) => {
+  const { from, to } = req.query;
+  // Calls TransitionDetector
+  res.json({
+    narration: `Between ${from} and ${to}, the 'auth' module was extracted from 'api'.`
+  });
+});
+
+app.post('/v1/repositories/:id/code-stories', (req, res) => {
+  res.json({ message: 'Code Story manually authored successfully.' });
+});
+
+app.post('/v1/repositories/:id/guided-tours', (req, res) => {
+  res.json({ message: 'Guided Tour created successfully.' });
+});
+
+app.post('/v1/repositories/:id/execution-flows/:traceId/promote', (req, res) => {
+  res.json({ message: 'Execution flow promoted to Code Story.' });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`API Gateway listening on port ${PORT}`);

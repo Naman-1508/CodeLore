@@ -182,3 +182,42 @@ export const chatMessages = pgTable('chat_message', {
   factChipsJson: text('fact_chips_json'), // JSON string of referenced files/functions
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const aiNarrations = pgTable('ai_narration', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  targetType: text('target_type').notNull(), // 'code_story_step', 'architect_finding'
+  targetId: uuid('target_id').notNull(),
+  narrationText: text('narration_text').notNull(),
+  fallbackUsed: boolean('fallback_used').default(false).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const architectureSnapshots = pgTable('architecture_snapshot', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  repositoryId: uuid('repository_id').references(() => repositories.id).notNull(),
+  commitHash: text('commit_hash').notNull(),
+  timestamp: timestamp('timestamp', { withTimezone: true }).notNull(),
+  moduleMapJson: text('module_map_json').notNull(),
+});
+
+export const guidedTours = pgTable('guided_tour', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  repositoryId: uuid('repository_id').references(() => repositories.id).notNull(),
+  title: text('title').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const guidedTourSteps = pgTable('guided_tour_step', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tourId: uuid('tour_id').references(() => guidedTours.id).notNull(),
+  codeStoryId: uuid('code_story_id').references(() => codeStories.id).notNull(),
+  order: integer('order').notNull(),
+});
+
+export const executionFlows = pgTable('execution_flow', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  repositoryId: uuid('repository_id').references(() => repositories.id).notNull(),
+  traceId: text('trace_id').notNull(),
+  flowDataJson: text('flow_data_json').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
