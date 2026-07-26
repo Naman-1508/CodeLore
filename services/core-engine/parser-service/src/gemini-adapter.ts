@@ -22,7 +22,7 @@ ${codeSnippet}
 Generate a highly descriptive, architectural summary for the above code snippet. Focus on its purpose and its role in the larger system. Do not write a traditional JSDoc comment. Keep it to 2-3 sentences.`;
 
     const response = await this.ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
     
@@ -39,7 +39,7 @@ Generate a highly descriptive, architectural summary for the above code snippet.
     const fullPrompt = contextPrompt + mappedMessages.join('\n\n');
 
     const response = await this.ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       contents: fullPrompt,
     });
     
@@ -51,7 +51,7 @@ Generate a highly descriptive, architectural summary for the above code snippet.
     
     try {
       const response = await this.ai.models.embedContent({
-        model: 'text-embedding-004',
+        model: 'gemini-embedding-2',
         contents: text
       });
       // The response returns embeddings.values which is the array of floats
