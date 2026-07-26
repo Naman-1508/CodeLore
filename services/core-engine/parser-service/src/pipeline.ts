@@ -23,6 +23,26 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
       .set({ indexingStatus: 'cloning' })
       .where(eq(repositories.id, repositoryId));
 
+    // Cleanup old data for idempotency
+    const repoStories = await db.select({ id: codeStories.id }).from(codeStories).where(eq(codeStories.repositoryId, repositoryId));
+    if (repoStories.length > 0) {
+      await db.delete(codeStorySteps).where(inArray(codeStorySteps.codeStoryId, repoStories.map(s => s.id)));
+      await db.delete(codeStories).where(eq(codeStories.repositoryId, repositoryId));
+    }
+    await db.delete(healthSnapshots).where(eq(healthSnapshots.repositoryId, repositoryId));
+    await db.delete(callEdges).where(eq(callEdges.repositoryId, repositoryId));
+    
+    const repoFiles = await db.select({ id: files.id }).from(files).where(eq(files.repositoryId, repositoryId));
+    if (repoFiles.length > 0) {
+      const fileIds = repoFiles.map(f => f.id);
+      for (let i = 0; i < fileIds.length; i += 1000) {
+        const chunk = fileIds.slice(i, i + 1000);
+        await db.delete(functions).where(inArray(functions.fileId, chunk));
+        await db.delete(classes).where(inArray(classes.fileId, chunk));
+      }
+    }
+    await db.delete(files).where(eq(files.repositoryId, repositoryId));
+
     // 2. Clone repository
     await fs.mkdir(path.join(__dirname, '..', 'tmp'), { recursive: true });
     // Remove if exists
@@ -82,10 +102,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
         path: d.path,
         language: d.language,
         loc: d.loc
-      }))).onConflictDoUpdate({
-        target: [files.repositoryId, files.path],
-        set: { loc: sql`EXCLUDED.loc`, language: sql`EXCLUDED.language` }
-      }).returning();
+      }))).returning();
       
       const fileToDbId = new Map();
       dbFiles.forEach(f => fileToDbId.set(f.path, f.id));
@@ -101,7 +118,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
 
       if (classesToInsert.length > 0) {
         for (let i = 0; i < classesToInsert.length; i += 1000) {
-          await db.insert(classes).values(classesToInsert.slice(i, i + 1000)).onConflictDoNothing();
+          await db.insert(classes).values(classesToInsert.slice(i, i + 1000));
         }
       }
 
@@ -114,10 +131,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
             signature: fn.signature,
             startLine: fn.startLine,
             endLine: fn.endLine
-          }))).onConflictDoUpdate({
-            target: [functions.fileId, functions.name],
-            set: { startLine: sql`EXCLUDED.start_line`, endLine: sql`EXCLUDED.end_line` }
-          }).returning();
+          }))).returning();
           
           for (let j = 0; j < chunk.length; j++) {
             allFunctionsWithCalls.push({ dbId: dbFns[j].id, calls: chunk[j].calls });
@@ -148,7 +162,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
       // Insert in chunks to avoid query size limits
       const chunkSize = 1000;
       for (let i = 0; i < edgesToInsert.length; i += chunkSize) {
-        await db.insert(callEdges).values(edgesToInsert.slice(i, i + chunkSize)).onConflictDoNothing();
+        await db.insert(callEdges).values(edgesToInsert.slice(i, i + chunkSize));
       }
     }
 
