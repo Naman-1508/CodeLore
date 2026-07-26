@@ -184,7 +184,10 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
     if (process.env.GEMINI_API_KEY) {
       const aiAdapter = new GeminiAdapter(process.env.GEMINI_API_KEY);
       // Mock finding an entry point (e.g. index.ts or main)
-      const entryPoints = repoFunctions.filter(f => f.name.includes('index') || f.name.includes('main') || f.name.includes('App'));
+      let entryPoints = repoFunctions.filter(f => f.name.includes('index') || f.name.includes('main') || f.name.includes('App'));
+      if (entryPoints.length === 0) {
+        entryPoints = repoFunctions.slice(0, 3);
+      }
       if (entryPoints.length > 0) {
         
         // CodeStoryGenerator expects functionsDbMap by ID. Let's create it:

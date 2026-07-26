@@ -8,7 +8,7 @@ import express, { Request, Response, RequestHandler } from 'express';
 import cors from 'cors';
 import { GoogleGenAI } from '@google/genai';
 import { ClerkExpressRequireAuth, StrictAuthProp } from '@clerk/clerk-sdk-node';
-import { createDbConnection, eq, sql, desc, repositories, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps, users, workspaces, files } from '@repo/database';
+import { createDbConnection, eq, sql, desc, repositories, functions, callEdges, architectureSnapshots, healthSnapshots, codeStories, codeStorySteps, users, workspaces, files } from '@repo/database';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
@@ -180,8 +180,8 @@ app.get('/v1/repositories/:id/functions', async (req, res) => {
 app.get('/v1/repositories/:id/architect-findings', async (req, res) => {
   try {
     // We'll return snapshots if any exist
-    const snapshots = await db.query.architectureSnapshots.findMany({
-      where: eq(architectureSnapshots.repositoryId, req.params.id),
+    const snapshots = await db.query.healthSnapshots.findMany({
+      where: eq(healthSnapshots.repositoryId, req.params.id),
       orderBy: (snap, { desc }) => [desc(snap.timestamp)],
       limit: 1
     });
@@ -192,14 +192,15 @@ app.get('/v1/repositories/:id/architect-findings', async (req, res) => {
     
     // Return the actual metrics JSON as findings if it exists
     const snap = snapshots[0];
-    if (snap.moduleMapJson) {
-      const metrics = typeof snap.moduleMapJson === 'string' ? JSON.parse(snap.moduleMapJson) : snap.moduleMapJson;
+    if (snap.metricsJson) {
+      const metrics = typeof snap.metricsJson === 'string' ? JSON.parse(snap.metricsJson) : snap.metricsJson;
       const findings = [];
-      if (metrics.couplingIndex > 50) {
-        findings.push({ id: 'f1', type: 'highly_coupled', severity: 'high', description: `High coupling index detected (${metrics.couplingIndex.toFixed(1)}). Code is highly interdependent.` });
+      if (metrics.deadFunctions > 0) {
+        findings.push({ id: 'f1', type: 'dead_code', severity: 'medium', description: `Found ${metrics.deadFunctions} potentially dead functions.` });
       }
-      if (metrics.modularityScore < 40) {
-         findings.push({ id: 'f2', type: 'low_modularity', severity: 'medium', description: `Modularity score is low (${metrics.modularityScore.toFixed(1)}). Consider breaking down large files.` });
+      const scoreNum = parseFloat(snap.score);
+      if (scoreNum < 50) {
+         findings.push({ id: 'f2', type: 'low_health', severity: 'high', description: `Overall health score is low (${scoreNum.toFixed(1)}).` });
       }
       return res.json(findings);
     }
@@ -249,8 +250,8 @@ app.get('/v1/repositories/:id/stories/:storyId', async (req, res) => {
 // --- Health Route ---
 app.get('/v1/repositories/:id/health', async (req, res) => {
   try {
-    const snapshots = await db.query.architectureSnapshots.findMany({
-      where: eq(architectureSnapshots.repositoryId, req.params.id),
+    const snapshots = await db.query.healthSnapshots.findMany({
+      where: eq(healthSnapshots.repositoryId, req.params.id),
       orderBy: (snap, { desc }) => [desc(snap.timestamp)],
       limit: 1
     });
@@ -262,12 +263,13 @@ app.get('/v1/repositories/:id/health', async (req, res) => {
     
     try {
       const snap = snapshots[0];
-      const metrics = typeof snap.moduleMapJson === 'string' ? JSON.parse(snap.moduleMapJson) : snap.moduleMapJson;
+      const metrics = typeof snap.metricsJson === 'string' ? JSON.parse(snap.metricsJson) : (snap.metricsJson || {});
+      const scoreNum = parseFloat(snap.score);
       res.json({ 
-        status: metrics.couplingIndex > 50 ? 'warning' : 'healthy', 
-        issues: (metrics.couplingIndex > 50 ? 1 : 0) + (metrics.modularityScore < 40 ? 1 : 0),
-        modularityScore: metrics.modularityScore,
-        couplingIndex: metrics.couplingIndex
+        status: scoreNum > 70 ? 'healthy' : 'warning', 
+        issues: metrics.deadFunctions || 0,
+        modularityScore: scoreNum,
+        couplingIndex: 0
       });
     } catch {
       res.json(null);
