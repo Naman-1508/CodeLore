@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Activity, ShieldAlert, GitBranch, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Activity, Shield, AlertTriangle, CheckCircle, Code2 } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
 
 export default function HealthDashboard() {

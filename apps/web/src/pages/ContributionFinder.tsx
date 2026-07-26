@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, GitCommit, GitPullRequest, Loader2 } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
 
 export default function ContributionFinder() {
   const { getToken } = useAuth();

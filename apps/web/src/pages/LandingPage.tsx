@@ -1,22 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { Code2, GitMerge, Search, Shield, ArrowRight, Activity, Globe, Network } from 'lucide-react';
+import { Code2, GitMerge, Search, Shield, ArrowRight, Activity, Network } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function LandingPage() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.15, delayChildren: 0.2 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
-  };
-
   return (
     <div className="h-screen w-full relative overflow-hidden bg-transparent flex">
       <div className="absolute inset-0 z-0">

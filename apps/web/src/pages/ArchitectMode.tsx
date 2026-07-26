@@ -19,7 +19,6 @@ export default function ArchitectMode() {
   const [loading, setLoading] = useState(true);
 
   // In a real app we'd fetch this from the router or state
-  const [repositories, setRepositories] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,7 +32,6 @@ export default function ArchitectMode() {
         if (repoRes.ok) {
            const repos = await repoRes.json();
            if (repos.length > 0) {
-             setRepositories(repos);
              if (!repoId) {
                repoId = repos[0].id;
                localStorage.setItem('codelore_active_repo', repoId as string);

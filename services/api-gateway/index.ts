@@ -63,11 +63,14 @@ app.post('/v1/repositories', async (req, res) => {
   const { remoteUrl } = req.body;
   
   try {
-    // Check if default workspace exists
-    let ws = await db.query.workspaces.findFirst();
+    const userIdentifier = req.auth?.userId || 'mock-user-123';
+    const workspaceName = `Workspace-${userIdentifier}`;
+    let ws = await db.query.workspaces.findFirst({
+      where: eq(workspaces.name, workspaceName)
+    });
     if (!ws) {
       const [newWs] = await db.insert(workspaces).values({
-        name: 'Default Workspace',
+        name: workspaceName,
         aiLayerEnabled: true
       }).returning();
       ws = newWs;
@@ -104,7 +107,19 @@ app.post('/v1/repositories', async (req, res) => {
 
 app.get('/v1/repositories', async (req, res) => {
   try {
-    const repos = await db.query.repositories.findMany();
+    const userIdentifier = req.auth?.userId || 'mock-user-123';
+    const workspaceName = `Workspace-${userIdentifier}`;
+    const ws = await db.query.workspaces.findFirst({
+      where: eq(workspaces.name, workspaceName)
+    });
+    
+    if (!ws) {
+       return res.json([]);
+    }
+
+    const repos = await db.query.repositories.findMany({
+      where: eq(repositories.workspaceId, ws.id)
+    });
     res.json(repos);
   } catch (err) {
     res.status(500).json({ error: 'Database error' });

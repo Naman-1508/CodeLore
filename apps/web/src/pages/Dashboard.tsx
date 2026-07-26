@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [indexingStatus, setIndexingStatus] = useState<string | null>(null);
   const [repoId, setRepoId] = useState<string | null>(() => localStorage.getItem('codelore_active_repo'));
   const [importLoading, setImportLoading] = useState(false);
+  const [existingRepos, setExistingRepos] = useState<any[]>([]);
 
   const fetchDashboardData = async () => {
     if (!repoId) {
@@ -63,6 +64,22 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    const fetchExistingRepos = async () => {
+      try {
+        const token = await getToken();
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories`, { headers });
+        if (res.ok) {
+          const repos = await res.json();
+          setExistingRepos(repos);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    if (!repoId) {
+      fetchExistingRepos();
+    }
     fetchDashboardData();
   }, [getToken, repoId]);
 
@@ -189,6 +206,35 @@ export default function Dashboard() {
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-coral-500 text-sm mt-4 font-medium text-center">
                   An error occurred during indexing. Please try again.
                 </motion.p>
+              )}
+              {existingRepos.length > 0 && (
+                <div className="mt-8 pt-8 border-t border-white/5 w-full">
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Your Repositories</h3>
+                  <div className="flex flex-col gap-3">
+                    {existingRepos.map(repo => (
+                      <button
+                        key={repo.id}
+                        type="button"
+                        onClick={() => {
+                          setRepoId(repo.id);
+                          localStorage.setItem('codelore_active_repo', repo.id);
+                          setIndexingStatus(repo.indexingStatus);
+                        }}
+                        className="flex items-center justify-between p-4 rounded-xl bg-midnight-100/50 hover:bg-blue-500/10 border border-white/5 hover:border-blue-500/30 transition-all text-left group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <GitBranch size={18} className="text-blue-400" />
+                          <span className="text-white font-medium group-hover:text-blue-400 transition-colors">{repo.name}</span>
+                        </div>
+                        <div className="flex flex-col text-right">
+                          <span className="text-xs text-slate-500">
+                            {repo.indexingStatus === 'ready' ? 'Indexed' : 'Pending'}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
             </form>
           </motion.div>

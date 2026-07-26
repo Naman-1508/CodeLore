@@ -12,7 +12,7 @@ export default function EngineeringMentor() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const REPO_ID = localStorage.getItem('codelore_active_repo') || '';
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
