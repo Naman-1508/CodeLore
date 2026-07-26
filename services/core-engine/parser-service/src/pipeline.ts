@@ -108,12 +108,24 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
       dbFiles.forEach(f => fileToDbId.set(f.path, f.id));
 
       const classesToInsert: { fileId: string; name: string }[] = [];
-      const functionsToInsert: { fileId: string; name: string; signature: string; startLine: number; endLine: number; calls: string[] }[] = [];
+      const functionsToInsert: { fileId: string; name: string; signature: string; startLine: number; endLine: number; calls: string[]; isEntryPoint: boolean }[] = [];
 
       parsedData.forEach(d => {
         const fId = fileToDbId.get(d.path);
         d.classes.forEach(c => classesToInsert.push({ fileId: fId, name: c.name }));
-        d.functions.forEach(fn => functionsToInsert.push({ fileId: fId, name: fn.name, signature: fn.signature, startLine: fn.startLine, endLine: fn.endLine, calls: fn.calls }));
+        
+        const pathLower = d.path.toLowerCase();
+        const isRouteFile = pathLower.endsWith('page.tsx') || pathLower.endsWith('route.ts') || pathLower.endsWith('layout.tsx') || pathLower.endsWith('index.ts') || pathLower.endsWith('main.ts') || pathLower.endsWith('app.tsx');
+        
+        d.functions.forEach(fn => functionsToInsert.push({ 
+          fileId: fId, 
+          name: fn.name, 
+          signature: fn.signature, 
+          startLine: fn.startLine, 
+          endLine: fn.endLine, 
+          calls: fn.calls,
+          isEntryPoint: isRouteFile && !!fn.isExported
+        }));
       });
 
       if (classesToInsert.length > 0) {
@@ -130,7 +142,8 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
             name: fn.name,
             signature: fn.signature,
             startLine: fn.startLine,
-            endLine: fn.endLine
+            endLine: fn.endLine,
+            isEntryPoint: fn.isEntryPoint
           }))).returning();
           
           for (let j = 0; j < chunk.length; j++) {
@@ -184,7 +197,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
     if (process.env.GEMINI_API_KEY) {
       const aiAdapter = new GeminiAdapter(process.env.GEMINI_API_KEY);
       // Mock finding an entry point (e.g. index.ts or main)
-      let entryPoints = repoFunctions.filter(f => f.name.includes('index') || f.name.includes('main') || f.name.includes('App'));
+      let entryPoints = repoFunctions.filter(f => f.isEntryPoint);
       if (entryPoints.length === 0) {
         entryPoints = repoFunctions.slice(0, 3);
       }

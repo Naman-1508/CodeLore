@@ -8,6 +8,7 @@ export interface ParsedFunction {
   startLine: number;
   endLine: number;
   calls: string[]; // Names of functions this function calls
+  isExported?: boolean;
 }
 
 export interface ParsedClass {
@@ -72,13 +73,24 @@ export class CodeParser {
         if (nameNode) {
           const bodyNode = node.childForFieldName('body');
           const calls = bodyNode ? findCalls(bodyNode) : [];
+          
+          let isExported = false;
+          let p = node.parent;
+          while (p) {
+            if (p.type === 'export_statement' || p.type === 'export_default_statement') {
+              isExported = true;
+              break;
+            }
+            p = p.parent;
+          }
 
           functions.push({
             name: nameNode.text,
             signature: node.text.split('{')[0].trim(),
             startLine: node.startPosition.row + 1,
             endLine: node.endPosition.row + 1,
-            calls
+            calls,
+            isExported
           });
         }
       } else if (node.type === 'class_declaration') {

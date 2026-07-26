@@ -198,7 +198,7 @@ app.get('/v1/repositories/:id/architect-findings', async (req, res) => {
       if (metrics.deadFunctions > 0) {
         findings.push({ id: 'f1', type: 'dead_code', severity: 'medium', description: `Found ${metrics.deadFunctions} potentially dead functions.` });
       }
-      const scoreNum = parseFloat(snap.score);
+      const scoreNum = Number(snap.score);
       if (scoreNum < 50) {
          findings.push({ id: 'f2', type: 'low_health', severity: 'high', description: `Overall health score is low (${scoreNum.toFixed(1)}).` });
       }
@@ -264,7 +264,7 @@ app.get('/v1/repositories/:id/health', async (req, res) => {
     try {
       const snap = snapshots[0];
       const metrics = typeof snap.metricsJson === 'string' ? JSON.parse(snap.metricsJson) : (snap.metricsJson || {});
-      const scoreNum = parseFloat(snap.score);
+      const scoreNum = Number(snap.score);
       res.json({ 
         status: scoreNum > 70 ? 'healthy' : 'warning', 
         issues: metrics.deadFunctions || 0,
