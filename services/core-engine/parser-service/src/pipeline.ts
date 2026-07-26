@@ -90,8 +90,8 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
       const fileToDbId = new Map();
       dbFiles.forEach(f => fileToDbId.set(f.path, f.id));
 
-      const classesToInsert = [];
-      const functionsToInsert = [];
+      const classesToInsert: { fileId: string; name: string }[] = [];
+      const functionsToInsert: { fileId: string; name: string; signature: string; startLine: number; endLine: number; calls: string[] }[] = [];
 
       parsedData.forEach(d => {
         const fId = fileToDbId.get(d.path);
@@ -195,7 +195,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
           
           for (const step of story.steps) {
             await db.insert(codeStorySteps).values({
-              storyId: dbStory.id,
+              codeStoryId: dbStory.id,
               order: step.order,
               functionId: step.functionId,
               narration: step.narration
