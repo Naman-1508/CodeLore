@@ -25,7 +25,7 @@ export default function Dashboard() {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
       const [healthRes, storiesRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${repoId}/architect-findings`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${repoId}/health`, { headers }),
         fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${repoId}/stories`, { headers })
       ]);
 
@@ -33,12 +33,8 @@ export default function Dashboard() {
       const storiesData = storiesRes.ok ? await storiesRes.json() : [];
 
       setData({
-        health: healthData || { modularityScore: 8.5, couplingIndex: 3.2, techDebt: 4.1 }, // Fallback if API missing
-        stories: Array.isArray(storiesData) && storiesData.length > 0 ? storiesData : [
-          { id: '1', title: 'Authentication Flow Breakdown', description: 'Traces how a user request flows through the API Gateway, validating JWT tokens before reaching the User Service.', type: 'core' },
-          { id: '2', title: 'Database Connection Pooling', description: 'Analysis of how the core engine manages Drizzle ORM connections to prevent connection exhaustion.', type: 'infra' },
-          { id: '3', title: 'Webhook Processing Pipeline', description: 'Explores the async queueing mechanism used to process third-party webhooks robustly.', type: 'event' }
-        ]
+        health: healthData,
+        stories: Array.isArray(storiesData) ? storiesData : []
       });
     } catch (e) {
       console.error("Failed to fetch dashboard data", e);
@@ -322,6 +318,8 @@ export default function Dashboard() {
           <button 
             onClick={() => {
               setRepoId(null);
+              setData({ health: null, stories: [] });
+              setIndexingStatus(null);
               localStorage.removeItem('codelore_active_repo');
             }}
             className="text-sm text-slate-300 hover:text-white bg-midnight-200/50 hover:bg-blue-500/20 border border-white/10 hover:border-blue-500/50 px-4 py-2 rounded-lg transition-all flex items-center gap-2"
