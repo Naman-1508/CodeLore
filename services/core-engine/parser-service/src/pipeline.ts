@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
-import { createDbConnection, eq, inArray, repositories, files, classes, functions, callEdges, healthSnapshots, codeStories, codeStorySteps } from '@repo/database';
+import { createDbConnection, eq, inArray, repositories, files, classes, functions, callEdges, healthSnapshots, codeStories, codeStorySteps, sql } from '@repo/database';
 import { CodeParser, ParsedFunction } from './parser';
 import { HealthScorer } from './health-scorer';
 import { CodeStoryGenerator } from './code-story-generator';
@@ -82,7 +82,10 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
         path: d.path,
         language: d.language,
         loc: d.loc
-      }))).returning();
+      }))).onConflictDoUpdate({
+        target: [files.repositoryId, files.path],
+        set: { loc: sql`EXCLUDED.loc`, language: sql`EXCLUDED.language` }
+      }).returning();
       
       const fileToDbId = new Map();
       dbFiles.forEach(f => fileToDbId.set(f.path, f.id));
@@ -98,7 +101,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
 
       if (classesToInsert.length > 0) {
         for (let i = 0; i < classesToInsert.length; i += 1000) {
-          await db.insert(classes).values(classesToInsert.slice(i, i + 1000));
+          await db.insert(classes).values(classesToInsert.slice(i, i + 1000)).onConflictDoNothing();
         }
       }
 
@@ -111,7 +114,10 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
             signature: fn.signature,
             startLine: fn.startLine,
             endLine: fn.endLine
-          }))).returning();
+          }))).onConflictDoUpdate({
+            target: [functions.fileId, functions.signature],
+            set: { startLine: sql`EXCLUDED.start_line`, endLine: sql`EXCLUDED.end_line` }
+          }).returning();
           
           for (let j = 0; j < chunk.length; j++) {
             allFunctionsWithCalls.push({ dbId: dbFns[j].id, calls: chunk[j].calls });
@@ -142,7 +148,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
       // Insert in chunks to avoid query size limits
       const chunkSize = 1000;
       for (let i = 0; i < edgesToInsert.length; i += chunkSize) {
-        await db.insert(callEdges).values(edgesToInsert.slice(i, i + chunkSize));
+        await db.insert(callEdges).values(edgesToInsert.slice(i, i + chunkSize)).onConflictDoNothing();
       }
     }
 
