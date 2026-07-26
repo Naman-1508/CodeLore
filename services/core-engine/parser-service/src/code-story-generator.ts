@@ -63,8 +63,14 @@ export class CodeStoryGenerator {
         }
       }
 
-      // Execute AI generation in parallel
-      const aiResults = await Promise.all(pendingAiTasks.map((task, index) => task(index + 1)));
+      // Execute AI generation sequentially to avoid hitting rate limits (429)
+      const aiResults = [];
+      for (let index = 0; index < pendingAiTasks.length; index++) {
+        const task = pendingAiTasks[index];
+        aiResults.push(await task(index + 1));
+        // Add a 2s delay between requests to respect free-tier RPM limits
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
       const storySteps = aiResults.sort((a, b) => a.order - b.order);
 
       stories.push({
