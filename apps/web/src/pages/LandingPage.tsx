@@ -17,10 +17,10 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-ivory-100">
+    <div className="min-h-screen relative overflow-hidden bg-transparent">
       <div className="absolute inset-0 z-0">
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-mint-400/10 rounded-full blur-[120px] mix-blend-multiply" />
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-indigo-500/10 rounded-full blur-[120px] mix-blend-multiply" />
+        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-cyan-500/100/10 rounded-full blur-[120px] mix-blend-multiply" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-coral-500/5 rounded-full blur-[150px] mix-blend-multiply" />
         <FloatingParticles />
       </div>
@@ -34,10 +34,10 @@ export default function LandingPage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center max-w-4xl mx-auto mb-20"
         >
-          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 border border-slate-200 text-indigo-700 text-sm font-semibold shadow-sm backdrop-blur-md">
+          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-midnight-100/10 border border-white/10 text-cyan-300 text-sm font-semibold shadow-sm backdrop-blur-md">
             <span className="relative flex h-2 w-2 mr-1">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500/100"></span>
             </span>
             CodeLore Platform 1.0 is Live
           </div>
@@ -46,17 +46,17 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-            className="text-6xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-8"
+            className="text-6xl md:text-7xl font-extrabold text-white tracking-tight leading-[1.1] mb-8"
           >
             Structural Intelligence for <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-mint-500">Engineering Teams.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Engineering Teams.</span>
           </motion.h1>
           
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-xl text-slate-600 leading-relaxed mb-10 max-w-2xl mx-auto"
+            className="text-xl text-slate-400 leading-relaxed mb-10 max-w-2xl mx-auto"
           >
             CodeLore automatically indexes your codebase to build visual call graphs, evaluate coupling, and generate architectural stories in seconds.
           </motion.p>
@@ -75,7 +75,7 @@ export default function LandingPage() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full"
         >
           <FeatureCard 
-            icon={<Code2 className="text-indigo-600" size={28} />}
+            icon={<Code2 className="text-cyan-400" size={28} />}
             title="Automated AST Parsing"
             description="Our Tree-sitter engine instantly breaks down any codebase into a queryable semantic map."
             delay={0}
@@ -93,7 +93,7 @@ export default function LandingPage() {
             delay={0.2}
           />
           <FeatureCard 
-            icon={<GitMerge className="text-indigo-600" size={28} />}
+            icon={<GitMerge className="text-cyan-400" size={28} />}
             title="PR Impact Analysis"
             description="See the architectural blast radius of every pull request before it gets merged."
             delay={0.3}
@@ -125,14 +125,14 @@ function FeatureCard({ icon, title, description, delay }: { icon: React.ReactNod
         show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24, delay } }
       }}
       whileHover={{ y: -5, scale: 1.02, transition: { duration: 0.2 } }}
-      className="glass-panel rounded-3xl p-8 hover:bg-white transition-all group relative overflow-hidden shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 cursor-default"
+      className="glass-panel rounded-3xl p-8 hover:bg-midnight-100 transition-all group relative overflow-hidden shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 cursor-default"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      <div className="bg-white rounded-2xl w-14 h-14 flex items-center justify-center mb-6 shadow-sm border border-slate-100">
+      <div className="bg-midnight-100 rounded-2xl w-14 h-14 flex items-center justify-center mb-6 shadow-sm border border-slate-100">
         {icon}
       </div>
-      <h3 className="text-xl font-bold text-slate-900 mb-3">{title}</h3>
-      <p className="text-slate-600 leading-relaxed">
+      <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+      <p className="text-slate-400 leading-relaxed">
         {description}
       </p>
     </motion.div>

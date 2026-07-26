@@ -6,12 +6,12 @@ export default function ArchitectureReplay() {
   const [progress, setProgress] = useState(45);
 
   return (
-    <div className="p-8 max-w-6xl mx-auto h-full flex flex-col bg-ivory-100">
+    <div className="p-8 max-w-6xl mx-auto h-full flex flex-col bg-transparent">
       <h1 className="text-3xl font-bold text-slate-50 mb-2">Architecture Replay</h1>
       <p className="text-slate-400 mb-8 leading-relaxed">Watch how the repository structure has evolved over time.</p>
       
       {/* Canvas Area */}
-      <div className="flex-1 bg-white border border-slate-200 rounded-lg shadow-inner relative flex items-center justify-center overflow-hidden mb-8 p-8">
+      <div className="flex-1 bg-midnight-100 border border-white/10 rounded-lg shadow-inner relative flex items-center justify-center overflow-hidden mb-8 p-8">
         {/* Mock visualization */}
         <div className="flex items-center justify-center gap-16 relative">
           <div className="w-32 h-32 bg-slate-900 border-2 border-slate-700 rounded shadow flex items-center justify-center font-mono text-slate-300 text-sm font-semibold z-10 transition-transform hover:scale-105 hover:border-blue-500/50">
@@ -20,7 +20,7 @@ export default function ArchitectureReplay() {
           
           {/* Animated line */}
           <div className="absolute top-1/2 left-[8rem] w-[4rem] h-0.5 bg-blue-500/50">
-            <div className="absolute w-2 h-32 bg-indigo-500/50 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)] z-20 left-[60%]"></div>
+            <div className="absolute w-2 h-32 bg-cyan-500/100/50 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)] z-20 left-[60%]"></div>
           </div>
           
           <div className="w-32 h-32 bg-slate-900 border-2 border-slate-700 rounded shadow flex items-center justify-center font-mono text-slate-300 text-sm font-semibold z-10 transition-transform hover:scale-105 hover:border-blue-500/50">
@@ -35,12 +35,12 @@ export default function ArchitectureReplay() {
       </div>
       
       {/* Controls */}
-      <div className="glass-panel border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col">
+      <div className="glass-panel border border-white/10 rounded-xl p-4 shadow-sm flex flex-col">
         <div className="flex items-center gap-6">
           <div className="flex gap-2">
             <button className="p-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded transition-colors"><Rewind size={20} /></button>
             <button 
-              className="p-2 text-slate-900 bg-slate-100 hover:bg-white rounded shadow-sm transition-colors"
+              className="p-2 text-white bg-slate-100 hover:bg-midnight-100 rounded shadow-sm transition-colors"
               onClick={() => setIsPlaying(!isPlaying)}
             >
               {isPlaying ? <Pause size={20} /> : <Play size={20} />}
@@ -58,7 +58,7 @@ export default function ArchitectureReplay() {
               onChange={(e) => setProgress(Number(e.target.value))}
               className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500" 
             />
-            <div className="mt-2 text-center text-xs text-slate-600 font-medium">
+            <div className="mt-2 text-center text-xs text-slate-400 font-medium">
               <span>Initial Commit</span>
               <span>Present Day</span>
             </div>

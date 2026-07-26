@@ -7,7 +7,7 @@ export default function Profile() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-500 bg-ivory-100">
+      <div className="flex h-full items-center justify-center text-slate-500 bg-transparent">
         <Loader2 className="animate-spin mr-2" /> Loading profile...
       </div>
     );
@@ -25,14 +25,14 @@ export default function Profile() {
         {/* Left Column: Avatar & Quick Actions */}
         <div className="col-span-1 space-y-6">
           <div className="glass-panel rounded-2xl p-6 text-center flex flex-col items-center">
-            <div className="w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-slate-200 bg-white flex items-center justify-center shadow-sm">
+            <div className="w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-white/10 bg-midnight-100 flex items-center justify-center shadow-sm">
               {user.imageUrl ? (
                 <img src={user.imageUrl} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <User size={40} className="text-slate-500" />
               )}
             </div>
-            <h2 className="text-xl font-bold text-slate-900">{user.fullName || 'Developer'}</h2>
+            <h2 className="text-xl font-bold text-white">{user.fullName || 'Developer'}</h2>
             <p className="text-slate-500 text-sm mb-6">{user.primaryEmailAddress?.emailAddress}</p>
             
             <button 
@@ -48,10 +48,10 @@ export default function Profile() {
         {/* Right Column: Settings */}
         <div className="col-span-2 space-y-6">
           {/* Personal Info */}
-          <div className="glass-panel rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="glass-panel rounded-2xl p-6 shadow-sm border border-white/10">
             <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
               <User size={20} className="text-blue-600" />
-              <h3 className="text-lg font-bold text-slate-900">Personal Information</h3>
+              <h3 className="text-lg font-bold text-white">Personal Information</h3>
             </div>
             
             <div className="space-y-4">
@@ -62,7 +62,7 @@ export default function Profile() {
                     type="text" 
                     disabled 
                     value={user.firstName || ''} 
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg font-mono text-sm opacity-70 cursor-not-allowed"
+                    className="w-full bg-midnight-100 border border-white/10 text-slate-300 px-4 py-2.5 rounded-lg font-mono text-sm opacity-70 cursor-not-allowed"
                   />
                 </div>
                 <div className="space-y-1">
@@ -71,7 +71,7 @@ export default function Profile() {
                     type="text" 
                     disabled 
                     value={user.lastName || ''} 
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg font-mono text-sm opacity-70 cursor-not-allowed"
+                    className="w-full bg-midnight-100 border border-white/10 text-slate-300 px-4 py-2.5 rounded-lg font-mono text-sm opacity-70 cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -80,7 +80,7 @@ export default function Profile() {
                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                   <Mail size={14} /> Email Addresses
                 </label>
-                <div className="w-full bg-slate-50 border border-slate-200 text-slate-700 px-4 py-3 rounded-lg font-mono text-sm flex flex-col gap-2 shadow-sm">
+                <div className="w-full bg-midnight-100 border border-white/10 text-slate-300 px-4 py-3 rounded-lg font-mono text-sm flex flex-col gap-2 shadow-sm">
                   {user.emailAddresses.map((email) => (
                     <div key={email.id} className="flex items-center justify-between">
                       <span>{email.emailAddress}</span>
@@ -95,13 +95,13 @@ export default function Profile() {
           </div>
 
           {/* Connected Accounts */}
-          <div className="glass-panel border border-slate-200 rounded-xl p-6 shadow-sm">
-            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="glass-panel border border-white/10 rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <Shield size={20} className="text-blue-600" />
               Security & Authentication
             </h3>
             
-            <p className="text-sm text-slate-600 mb-4 leading-relaxed">
+            <p className="text-sm text-slate-400 mb-4 leading-relaxed">
               You are using Clerk Headless UI. To manage advanced security settings like multi-factor authentication or connected OAuth accounts, use the Clerk Dashboard during this development phase.
             </p>
 

@@ -55,7 +55,7 @@ export default function CustomSignIn() {
   };
 
   return (
-    <div className="flex min-h-screen bg-ivory-100 overflow-hidden relative">
+    <div className="flex min-h-screen bg-transparent overflow-hidden relative">
       {/* Background Ambient Animation specific for Login */}
       <div className="absolute inset-0 z-0">
         <motion.div 
@@ -76,25 +76,25 @@ export default function CustomSignIn() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="w-full md:w-1/2 flex flex-col justify-center"
         >
-          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 border border-slate-200 text-indigo-700 text-sm font-semibold shadow-sm w-fit">
+          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-midnight-100/10 border border-white/10 text-cyan-300 text-sm font-semibold shadow-sm w-fit">
             <span className="relative flex h-2 w-2 mr-1">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500/100"></span>
             </span>
             CodeLore Security
           </div>
           
-          <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 leading-tight tracking-tight mb-6">
-            Enter the <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-mint-500">Workspace.</span>
+          <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-tight tracking-tight mb-6">
+            Enter the <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Workspace.</span>
           </h1>
           
-          <p className="text-lg text-slate-600 leading-relaxed mb-10 max-w-lg">
+          <p className="text-lg text-slate-400 leading-relaxed mb-10 max-w-lg">
             Sign in to securely access your organization's architectural indexes, code stories, and repository health metrics.
           </p>
           
           <div className="space-y-6">
             {[
-              { icon: <Code2 className="text-indigo-600" size={24} />, text: 'End-to-end encrypted codebase analysis' },
+              { icon: <Code2 className="text-cyan-400" size={24} />, text: 'End-to-end encrypted codebase analysis' },
               { icon: <Globe className="text-mint-500" size={24} />, text: 'Role-based architectural access control' }
             ].map((feature, i) => (
               <motion.div 
@@ -105,7 +105,7 @@ export default function CustomSignIn() {
                 className="flex items-center gap-4 glass-panel px-6 py-4 rounded-xl w-fit"
               >
                 {feature.icon}
-                <span className="font-medium text-slate-800">{feature.text}</span>
+                <span className="font-medium text-slate-200">{feature.text}</span>
               </motion.div>
             ))}
           </div>
@@ -122,7 +122,7 @@ export default function CustomSignIn() {
             <div className="absolute -inset-0.5 bg-gradient-to-br from-indigo-500/5 to-coral-500/5 opacity-50 blur pointer-events-none"></div>
             
             <div className="relative">
-              <h2 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">Welcome Back</h2>
+              <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Welcome Back</h2>
               <p className="text-slate-500 mb-8">Sign in to access your workspaces</p>
               
               {/* OAuth Buttons */}
@@ -131,7 +131,7 @@ export default function CustomSignIn() {
                   whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.9)" }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleOAuth('oauth_github')}
-                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white/60 border border-slate-200 rounded-xl text-slate-800 font-semibold transition-colors shadow-sm"
+                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-midnight-100/10 border border-white/10 rounded-xl text-slate-200 font-semibold transition-colors shadow-sm"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Continue with GitHub
                 </motion.button>
@@ -139,7 +139,7 @@ export default function CustomSignIn() {
                   whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.9)" }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleOAuth('oauth_google')}
-                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white/60 border border-slate-200 rounded-xl text-slate-800 font-semibold transition-colors shadow-sm"
+                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-midnight-100/10 border border-white/10 rounded-xl text-slate-200 font-semibold transition-colors shadow-sm"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -153,7 +153,7 @@ export default function CustomSignIn() {
                   whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.9)" }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleOAuth('oauth_apple')}
-                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white/60 border border-slate-200 rounded-xl text-slate-800 font-semibold transition-colors shadow-sm"
+                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-midnight-100/10 border border-white/10 rounded-xl text-slate-200 font-semibold transition-colors shadow-sm"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M14.73 3.65c-.09.91-.45 1.77-1.02 2.51-.54.67-1.25 1.18-2.06 1.48-.11-.89.28-1.79.83-2.48.53-.66 1.25-1.16 2.05-1.46.06-.05.13-.05.2 0zm5.18 6.64c-.03 1.96 1.02 3.79 2.66 4.88-.63 1.83-1.55 3.51-2.73 4.96-1.12 1.34-2.28 2.64-3.66 2.7-1.43.06-2.02-.73-3.67-.73-1.63 0-2.27.75-3.62.77-1.39.02-2.67-1.36-3.88-2.82C2.5 16.71 1.09 12.35 2.37 9.17c.63-1.57 1.73-2.91 3.14-3.83 1.35-.91 2.94-1.39 4.54-1.38 1.45.02 2.78.47 3.97 1.04 1.15.54 1.82.59 2.98.05 1.04-.49 2.21-.71 3.39-.63 1.68.12 3.25.91 4.38 2.23-1.8 1.25-2.84 3.31-2.86 5.64z"/>
@@ -171,23 +171,23 @@ export default function CustomSignIn() {
               {/* Email Form */}
               <form onSubmit={handleEmailSignIn} className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
+                  <label className="text-sm font-semibold text-slate-300 ml-1">Email Address</label>
                   <input 
                     type="email" 
                     value={emailAddress}
                     onChange={(e) => setEmailAddress(e.target.value)}
-                    className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
+                    className="w-full bg-midnight-100/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
                     placeholder="you@company.com"
                     required
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-slate-700 ml-1">Password</label>
+                  <label className="text-sm font-semibold text-slate-300 ml-1">Password</label>
                   <input 
                     type="password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
+                    className="w-full bg-midnight-100/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
                     placeholder="••••••••"
                     required
                   />
@@ -211,7 +211,7 @@ export default function CustomSignIn() {
                   whileTap={{ scale: 0.98 }}
                   type="submit" 
                   disabled={loading || !emailAddress || !password}
-                  className="w-full mt-4 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium py-3.5 rounded-xl transition-colors shadow-lg shadow-indigo-600/25"
+                  className="w-full mt-4 flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-medium py-3.5 rounded-xl transition-colors shadow-lg shadow-cyan-500/25"
                 >
                   {loading ? <Loader2 size={18} className="animate-spin" /> : 'Sign In'}
                   {!loading && <ArrowRight size={18} />}
@@ -221,7 +221,7 @@ export default function CustomSignIn() {
             
             <div className="mt-8 text-center text-sm">
               <span className="text-slate-500">Don't have an account? </span>
-              <Link to="/sign-up" className="font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
+              <Link to="/sign-up" className="font-bold text-cyan-400 hover:text-indigo-500 transition-colors">
                 Sign up
               </Link>
             </div>

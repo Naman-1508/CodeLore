@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex flex-col min-h-screen text-slate-900 font-sans relative">
+    <div className="flex flex-col min-h-screen text-slate-100 font-sans relative">
       
       {/* Floating Command Island */}
       <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
@@ -37,9 +37,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
           {/* Logo / Context */}
-          <div className="flex items-center gap-2 mr-4 border-r border-slate-300 pr-4">
-            <div className="bg-indigo-500/20 p-1.5 rounded-full">
-              <Compass className="text-indigo-600" size={18} />
+          <div className="flex items-center gap-2 mr-4 border-r border-white/10 pr-4">
+            <div className="bg-cyan-500/20 p-1.5 rounded-full">
+              <Compass className="text-cyan-400" size={18} />
             </div>
             <AnimatePresence>
               {hovered && (
@@ -66,11 +66,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* User Profile */}
-          <div className="ml-4 pl-4 border-l border-slate-300 flex items-center gap-2">
-             <NavLink to="/profile" className={({isActive}) => `p-2 rounded-full transition-colors ${isActive ? 'bg-indigo-500/10 text-indigo-600' : 'text-slate-500 hover:text-slate-900 hover:bg-black/5'}`}>
+          <div className="ml-4 pl-4 border-l border-white/10 flex items-center gap-2">
+             <NavLink to="/profile" className={({isActive}) => `p-2 rounded-full transition-colors ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
                <User size={18} />
              </NavLink>
-             <NavLink to="/settings" className={({isActive}) => `p-2 rounded-full transition-colors ${isActive ? 'bg-indigo-500/10 text-indigo-600' : 'text-slate-500 hover:text-slate-900 hover:bg-black/5'}`}>
+             <NavLink to="/settings" className={({isActive}) => `p-2 rounded-full transition-colors ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
                <Settings size={18} />
              </NavLink>
           </div>
@@ -104,7 +104,7 @@ function NavItem({ to, icon, label, hovered }: { to: string, icon: React.ReactNo
       to={to}
       className={({ isActive }) => `
         group relative flex items-center justify-center rounded-full transition-all duration-300
-        ${isActive ? 'bg-indigo-500/10 text-indigo-700' : 'text-slate-600 hover:text-slate-900 hover:bg-black/5'}
+        ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5'}
         ${hovered ? 'px-4 py-2' : 'p-2.5'}
       `}
       title={!hovered ? label : undefined}
