@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
-import { createDbConnection, eq, inArray, repositories, files, classes, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps } from '@repo/database';
+import { createDbConnection, eq, inArray, repositories, files, classes, functions, callEdges, healthSnapshots, codeStories, codeStorySteps } from '@repo/database';
 import { CodeParser, ParsedFunction } from './parser';
 import { HealthScorer } from './health-scorer';
 import { CodeStoryGenerator } from './code-story-generator';
@@ -154,10 +154,9 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
     
     // Calculate health
     const health = HealthScorer.calculateScore(repositoryId, allDbFiles, repoFunctions, edgesToInsert);
-    await db.insert(architectureSnapshots).values({
+    await db.insert(healthSnapshots).values({
       repositoryId,
-      modularityScore: health.modularityScore,
-      couplingIndex: health.couplingIndex.toString(),
+      score: health.modularityScore,
       metricsJson: health.metricsJson
     });
 
