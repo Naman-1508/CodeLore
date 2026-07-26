@@ -4,7 +4,7 @@ import { useUser } from '@clerk/clerk-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, GitMerge, Search, Shield, Bot, LayoutDashboard, 
-  Activity, Users, Settings, User, Compass
+  Activity, Users, Settings, User, Network
 } from 'lucide-react';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -39,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Logo / Context */}
           <div className="flex items-center gap-2 mr-4 border-r border-white/10 pr-4">
             <div className="bg-cyan-500/20 p-1.5 rounded-full">
-              <Compass className="text-cyan-400" size={18} />
+              <Network className="text-cyan-400" size={18} />
             </div>
             <AnimatePresence>
               {hovered && (
