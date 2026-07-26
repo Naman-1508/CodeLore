@@ -9,11 +9,12 @@ import { CodeStoryGenerator } from './code-story-generator';
 import { GeminiAdapter } from './gemini-adapter';
 
 const execAsync = promisify(exec);
-const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/codelore';
-const db = createDbConnection(dbUrl);
+// DB connection created dynamically to ensure env vars are loaded first
 const parser = new CodeParser();
 
 export async function runParsingPipeline(repositoryId: string, remoteUrl: string, workspaceId: string) {
+  const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/codelore';
+  const db = createDbConnection(dbUrl);
   const tmpDir = path.join(__dirname, '..', 'tmp', repositoryId);
 
   try {
