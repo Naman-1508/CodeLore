@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, uuid, boolean, pgEnum, integer, unique, numeric, AnyPgColumn, vector } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
 
 export const roleEnum = pgEnum('role', ['owner', 'admin', 'member', 'viewer']);
 export const aiProviderStatusEnum = pgEnum('ai_provider_status', ['active', 'quota_exceeded', 'disabled', 'error']);
@@ -222,3 +223,32 @@ export const executionFlows = pgTable('execution_flow', {
   flowDataJson: text('flow_data_json').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const codeStoriesRelations = relations(codeStories, ({ many }) => ({
+  steps: many(codeStorySteps),
+}));
+
+export const codeStoryStepsRelations = relations(codeStorySteps, ({ one }) => ({
+  codeStory: one(codeStories, {
+    fields: [codeStorySteps.codeStoryId],
+    references: [codeStories.id],
+  }),
+  function: one(functions, {
+    fields: [codeStorySteps.functionId],
+    references: [functions.id],
+  }),
+}));
+
+export const functionsRelations = relations(functions, ({ one }) => ({
+  file: one(files, {
+    fields: [functions.fileId],
+    references: [files.id],
+  }),
+}));
+
+export const filesRelations = relations(files, ({ one }) => ({
+  repository: one(repositories, {
+    fields: [files.repositoryId],
+    references: [repositories.id],
+  }),
+}));

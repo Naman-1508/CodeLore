@@ -218,6 +218,7 @@ app.get('/v1/repositories/:id/stories', async (req, res) => {
     });
     res.json(stories);
   } catch (err) {
+    console.error('Stories error:', err);
     res.status(500).json({ error: 'Failed to fetch stories' });
   }
 });
@@ -275,6 +276,7 @@ app.get('/v1/repositories/:id/health', async (req, res) => {
       res.json(null);
     }
   } catch (err) {
+    console.error('Health error:', err);
     res.status(500).json({ error: 'Failed to fetch health' });
   }
 });
