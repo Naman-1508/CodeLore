@@ -319,6 +319,16 @@ export default function Dashboard() {
         
         {/* Quick Action / Stats summary in header */}
         <div className="flex items-center gap-4">
+          <button 
+            onClick={() => {
+              setRepoId(null);
+              localStorage.removeItem('codelore_active_repo');
+            }}
+            className="text-sm text-slate-300 hover:text-white bg-midnight-200/50 hover:bg-blue-500/20 border border-white/10 hover:border-blue-500/50 px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+          >
+            <GitBranch size={16} /> Switch Repository
+          </button>
+          
           <div className="bg-midnight-100/10 border border-white/10 rounded-lg px-4 py-2 shadow-sm backdrop-blur-md flex items-center gap-3">
             <div className="bg-mint-100 p-1.5 rounded-md">
               <Activity size={16} className="text-mint-600" />
@@ -408,18 +418,18 @@ export default function Dashboard() {
                 <MetricBar 
                   label="Modularity Score" 
                   value={data.health.modularityScore} 
-                  max={10} 
+                  max={100} 
                   color="from-mint-400 to-emerald-500" 
                 />
                 <MetricBar 
                   label="Coupling Index" 
                   value={data.health.couplingIndex} 
-                  max={10} 
+                  max={100} 
                   color="from-coral-400 to-red-500" 
                 />
                 <MetricBar 
-                  label="Technical Debt Est." 
-                  value={data.health.techDebt || 4.1} 
+                  label="Issues Detected" 
+                  value={data.health.issues} 
                   max={10} 
                   color="from-amber-400 to-orange-500" 
                 />
@@ -429,31 +439,7 @@ export default function Dashboard() {
             )}
           </motion.div>
           
-          <motion.div variants={itemVariants} className="glass-panel rounded-2xl p-6 bg-midnight-100/5">
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <Users size={20} className="text-indigo-500" /> Recent Contributors
-            </h2>
-            <div className="space-y-4">
-              {[
-                { name: "Alice Jenkins", commits: 14, role: "Core Architecture" },
-                { name: "Bob Smith", commits: 8, role: "UI / Features" },
-                { name: "Charlie Davis", commits: 3, role: "DevOps" }
-              ].map((user, i) => (
-                <div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-midnight-100/10 transition-colors border border-transparent hover:border-white/10">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold">
-                    {user.name.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-white text-sm">{user.name}</div>
-                    <div className="text-xs text-slate-500">{user.role}</div>
-                  </div>
-                  <div className="text-xs font-medium text-slate-400 bg-white/5 px-2 py-1 rounded-md">
-                    {user.commits} commits
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+
           
         </div>
       </div>
