@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
-import { createDbConnection, eq, repositories, files, classes, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps } from '@repo/database';
+import { createDbConnection, eq, inArray, repositories, files, classes, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps } from '@repo/database';
 import { CodeParser, ParsedFunction } from './parser';
 import { HealthScorer } from './health-scorer';
 import { CodeStoryGenerator } from './code-story-generator';
@@ -75,35 +75,48 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
     const allFunctionsWithCalls: { dbId: string, calls: string[] }[] = [];
     const functionNameToIdMap = new Map<string, string>();
 
-    for (const data of parsedData) {
-      // Insert file
-      const [dbFile] = await db.insert(files).values({
+    if (parsedData.length > 0) {
+      const dbFiles = await db.insert(files).values(parsedData.map(d => ({
         repositoryId,
-        path: data.path,
-        language: data.language,
-        loc: data.loc
-      }).returning();
+        path: d.path,
+        language: d.language,
+        loc: d.loc
+      }))).returning();
+      
+      const fileToDbId = new Map();
+      dbFiles.forEach(f => fileToDbId.set(f.path, f.id));
 
-      // Insert classes
-      for (const cls of data.classes) {
-        await db.insert(classes).values({
-          fileId: dbFile.id,
-          name: cls.name
-        });
+      const classesToInsert = [];
+      const functionsToInsert = [];
+
+      parsedData.forEach(d => {
+        const fId = fileToDbId.get(d.path);
+        d.classes.forEach(c => classesToInsert.push({ fileId: fId, name: c.name }));
+        d.functions.forEach(fn => functionsToInsert.push({ fileId: fId, name: fn.name, signature: fn.signature, startLine: fn.startLine, endLine: fn.endLine, calls: fn.calls }));
+      });
+
+      if (classesToInsert.length > 0) {
+        for (let i = 0; i < classesToInsert.length; i += 1000) {
+          await db.insert(classes).values(classesToInsert.slice(i, i + 1000));
+        }
       }
 
-      // Insert functions
-      for (const fn of data.functions) {
-        const [dbFn] = await db.insert(functions).values({
-          fileId: dbFile.id,
-          name: fn.name,
-          signature: fn.signature,
-          startLine: fn.startLine,
-          endLine: fn.endLine
-        }).returning();
-
-        allFunctionsWithCalls.push({ dbId: dbFn.id, calls: fn.calls });
-        functionNameToIdMap.set(fn.name, dbFn.id);
+      if (functionsToInsert.length > 0) {
+        for (let i = 0; i < functionsToInsert.length; i += 1000) {
+          const chunk = functionsToInsert.slice(i, i + 1000);
+          const dbFns = await db.insert(functions).values(chunk.map(fn => ({
+            fileId: fn.fileId,
+            name: fn.name,
+            signature: fn.signature,
+            startLine: fn.startLine,
+            endLine: fn.endLine
+          }))).returning();
+          
+          for (let j = 0; j < chunk.length; j++) {
+            allFunctionsWithCalls.push({ dbId: dbFns[j].id, calls: chunk[j].calls });
+            functionNameToIdMap.set(chunk[j].name, dbFns[j].id);
+          }
+        }
       }
     }
 
@@ -135,14 +148,8 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
     // 5. Run Health Scorer and AI Generators
     console.log('Running AI generation and heuristics...');
     const allDbFiles = await db.query.files.findMany({ where: eq(files.repositoryId, repositoryId) });
-    const allDbFunctions = await db.query.functions.findMany();
-    
-    // Map file id to repository id
-    const fileToRepoMap = new Map();
-    for (const f of allDbFiles) fileToRepoMap.set(f.id, f.repositoryId);
-
-    // Filter functions by this repo manually to avoid complex subqueries for MVP
-    const repoFunctions = allDbFunctions.filter(f => fileToRepoMap.get(f.fileId) === repositoryId);
+    const fileIds = allDbFiles.map(f => f.id);
+    const repoFunctions = fileIds.length > 0 ? await db.query.functions.findMany({ where: inArray(functions.fileId, fileIds) }) : [];
     
     // Calculate health
     const health = HealthScorer.calculateScore(repositoryId, allDbFiles, repoFunctions, edgesToInsert);
@@ -192,9 +199,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
       }
     }
 
-    // 6. Cleanup and mark ready
-    await fs.rm(tmpDir, { recursive: true, force: true });
-    
+    // 6. Mark ready
     await db.update(repositories)
       .set({ 
         indexingStatus: 'ready',
@@ -209,6 +214,8 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
     await db.update(repositories)
       .set({ indexingStatus: 'error' })
       .where(eq(repositories.id, repositoryId));
+  } finally {
+    await fs.rm(tmpDir, { recursive: true, force: true }).catch(console.error);
   }
 }
 

@@ -21,22 +21,21 @@ export class CodeStoryGenerator {
     }
 
     for (const entryPoint of entryPoints) {
-      // Traverse call graph using BFS/DFS (let's do BFS for sequence up to depth 4)
-      const storySteps: { order: number, functionId: string, narration: string }[] = [];
+      // Traverse call graph using BFS
       const visited = new Set<string>();
       const queue: { id: string, depth: number }[] = [{ id: entryPoint.id, depth: 0 }];
       
-      let order = 1;
       const MAX_DEPTH = 3; // Keep stories concise for MVP
+      const pendingAiTasks = [];
+      let order = 1;
 
-      while (queue.length > 0 && order <= 5) { // Cap at 5 steps per story
+      while (queue.length > 0 && order <= 5) {
         const { id, depth } = queue.shift()!;
         if (visited.has(id)) continue;
         visited.add(id);
 
         const fnData = functionsDbMap.get(id);
         if (fnData) {
-          // Generate a narrative for this step using AI
           const codeSnippet = fnData.signature || fnData.name;
           const contextFacts = [
             `This function is part of a flow starting at ${entryPoint.name}.`,
@@ -44,14 +43,15 @@ export class CodeStoryGenerator {
             `Function Name: ${fnData.name}`
           ];
 
-          // Use AI to generate step narration
-          const narration = await aiAdapter.generateDocstring(codeSnippet, contextFacts);
-
-          storySteps.push({
-            order,
-            functionId: id,
-            narration
+          pendingAiTasks.push(async (currentOrder: number) => {
+            const narration = await aiAdapter.generateDocstring(codeSnippet, contextFacts);
+            return {
+              order: currentOrder,
+              functionId: id,
+              narration
+            };
           });
+
           order++;
         }
 
@@ -62,6 +62,10 @@ export class CodeStoryGenerator {
           }
         }
       }
+
+      // Execute AI generation in parallel
+      const aiResults = await Promise.all(pendingAiTasks.map((task, index) => task(index + 1)));
+      const storySteps = aiResults.sort((a, b) => a.order - b.order);
 
       stories.push({
         title: `${entryPoint.name} Flow`,
