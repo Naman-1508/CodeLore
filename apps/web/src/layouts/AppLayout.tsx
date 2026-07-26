@@ -62,6 +62,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <NavItem to="/architect" icon={<Shield size={18} />} label="Architect" hovered={hovered} />
             <NavItem to="/search" icon={<Search size={18} />} label="Search" hovered={hovered} />
             <NavItem to="/mentor" icon={<Bot size={18} />} label="Mentor" hovered={hovered} />
+            <NavItem to="/health" icon={<Activity size={18} />} label="Health" hovered={hovered} />
           </div>
 
           {/* User Profile */}

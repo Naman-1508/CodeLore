@@ -15,7 +15,7 @@ export default function ArchitectMode() {
         const token = await getToken();
         const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const res = await fetch(`http://localhost:4000/v1/repositories/${REPO_ID}/architect-findings`, { headers });
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${REPO_ID}/architect-findings`, { headers });
         if (res.ok) {
           const findings = await res.json();
           setData(Array.isArray(findings) ? findings : []);

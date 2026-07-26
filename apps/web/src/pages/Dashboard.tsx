@@ -24,8 +24,8 @@ export default function Dashboard() {
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
       const [healthRes, storiesRes] = await Promise.all([
-        fetch(`http://localhost:4000/v1/repositories/${repoId}/architect-findings`, { headers }),
-        fetch(`http://localhost:4000/v1/repositories/${repoId}/stories`, { headers })
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${repoId}/architect-findings`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${repoId}/stories`, { headers })
       ]);
 
       const healthData = healthRes.ok ? await healthRes.json() : null;
@@ -51,7 +51,7 @@ export default function Dashboard() {
     try {
       const token = await getToken();
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await fetch(`http://localhost:4000/v1/repositories/${repoId}/status`, { headers });
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${repoId}/status`, { headers });
       if (res.ok) {
         const json = await res.json();
         setIndexingStatus(json.status);
@@ -82,7 +82,7 @@ export default function Dashboard() {
       const token = await getToken();
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
       
-      const res = await fetch(`http://localhost:4000/v1/repositories`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories`, {
         method: 'POST',
         headers,
         body: JSON.stringify({

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Activity, ShieldAlert, GitBranch, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 
 export default function HealthDashboard() {
@@ -15,7 +16,7 @@ export default function HealthDashboard() {
         const token = await getToken();
         const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const res = await fetch(`http://localhost:4000/v1/repositories/${REPO_ID}/health`, { headers });
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${REPO_ID}/health`, { headers });
         if (res.ok) {
           const healthData = await res.json();
           setData(healthData);

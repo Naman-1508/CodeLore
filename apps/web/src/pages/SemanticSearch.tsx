@@ -21,7 +21,7 @@ export default function SemanticSearch() {
 
       // For MVP, we will hit the functions endpoint as a search stub.
       // In Phase 2, this will hit a pgvector similarity search endpoint.
-      const res = await fetch(`http://localhost:4000/v1/repositories/${REPO_ID}/functions`, { headers });
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${REPO_ID}/functions`, { headers });
       if (res.ok) {
         const functions = await res.json();
         // Just mock a client-side filter for now
