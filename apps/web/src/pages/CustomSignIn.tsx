@@ -1,21 +1,36 @@
 import { useState } from 'react';
 import { useSignIn } from '@clerk/clerk-react';
-import { BookOpen, Activity, GitMerge, FileText, Loader2, GitBranch } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2, ArrowRight, Code2, Globe } from 'lucide-react';
 
 export default function CustomSignIn() {
   const { isLoaded, signIn, setActive } = useSignIn();
-  const navigate = useNavigate();
-  
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Handle standard email/password submit
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle OAuth Sign In
+  const handleOAuth = async (strategy: 'oauth_github' | 'oauth_google' | 'oauth_apple') => {
+    if (!isLoaded) return;
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy,
+        redirectUrl: '/sso-callback',
+        redirectUrlComplete: '/dashboard',
+      });
+    } catch (err: any) {
+      console.error('OAuth error', err);
+      setError(err.errors?.[0]?.message || 'OAuth sign in failed');
+    }
+  };
+
+  // Handle Email/Password Sign In
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoaded) return;
+    
     setLoading(true);
     setError('');
 
@@ -27,179 +42,191 @@ export default function CustomSignIn() {
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
-        navigate('/dashboard');
       } else {
-        // Needs MFA or other steps (simplifying for MVP)
         console.log(result);
-        setError('Additional steps required. Please use OAuth for now.');
+        setError('Requires additional steps (e.g. 2FA).');
       }
     } catch (err: any) {
-      console.error(err);
+      console.error('Email sign in error', err);
       setError(err.errors?.[0]?.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle OAuth (Github/Google)
-  const signInWith = (strategy: 'oauth_github' | 'oauth_google' | 'oauth_apple') => {
-    if (!isLoaded) return;
-    return signIn.authenticateWithRedirect({
-      strategy,
-      redirectUrl: '/sso-callback',
-      redirectUrlComplete: '/dashboard',
-    });
-  };
-
   return (
-    <div className="min-h-screen flex bg-slate-950 font-sans text-slate-50">
-      {/* Left Side - Brand & Presentation */}
-      <div className="hidden lg:flex lg:w-1/2 bg-slate-900 flex-col justify-center px-16 border-r border-slate-800">
-        <div className="max-w-md">
-          <div className="flex items-center gap-3 mb-10">
-            <BookOpen size={28} className="text-blue-400" />
-            <h1 className="text-3xl font-bold tracking-tight text-slate-50">CodeLore</h1>
+    <div className="flex min-h-screen bg-ivory-100 overflow-hidden relative">
+      {/* Background Ambient Animation specific for Login */}
+      <div className="absolute inset-0 z-0">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 150, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+CjxwYXRoIGQ9Ik0wIDBMMCA0MEw0MCA0MEw0MCAwWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDEyOSwgMTQwLCAyNDgsIDAuMDUpIiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+')] opacity-40"
+        />
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-mint-400/20 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-coral-500/10 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="relative z-10 flex flex-col md:flex-row w-full max-w-6xl mx-auto items-center p-8 gap-16">
+        
+        {/* Left Side: Marketing Value Prop */}
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="w-full md:w-1/2 flex flex-col justify-center"
+        >
+          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 border border-slate-200 text-indigo-700 text-sm font-semibold shadow-sm w-fit">
+            <span className="relative flex h-2 w-2 mr-1">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+            </span>
+            CodeLore Security
           </div>
           
-          <h2 className="text-4xl font-bold mb-6 text-slate-50 leading-tight">
-            The reference <br/>documentation <br/>that writes itself.
-          </h2>
+          <h1 className="text-5xl md:text-6xl font-extrabold text-slate-900 leading-tight tracking-tight mb-6">
+            Enter the <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-mint-500">Workspace.</span>
+          </h1>
           
-          <p className="text-lg text-slate-400 mb-12 leading-relaxed">
-            Sign in to access your indexed repositories, view architectural health scores, and interact with the Engineering Mentor.
+          <p className="text-lg text-slate-600 leading-relaxed mb-10 max-w-lg">
+            Sign in to securely access your organization's architectural indexes, code stories, and repository health metrics.
           </p>
           
           <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="bg-slate-800 p-2 rounded text-slate-300 mt-1">
-                <FileText size={18} />
+            {[
+              { icon: <Code2 className="text-indigo-600" size={24} />, text: 'End-to-end encrypted codebase analysis' },
+              { icon: <Globe className="text-mint-500" size={24} />, text: 'Role-based architectural access control' }
+            ].map((feature, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + (i * 0.1), duration: 0.5 }}
+                className="flex items-center gap-4 glass-panel px-6 py-4 rounded-xl w-fit"
+              >
+                {feature.icon}
+                <span className="font-medium text-slate-800">{feature.text}</span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Right Side: Glass Auth Form */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+          className="w-full md:w-[450px]"
+        >
+          <div className="glass-panel p-8 md:p-10 rounded-3xl relative overflow-hidden">
+            <div className="absolute -inset-0.5 bg-gradient-to-br from-indigo-500/5 to-coral-500/5 opacity-50 blur pointer-events-none"></div>
+            
+            <div className="relative">
+              <h2 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">Welcome Back</h2>
+              <p className="text-slate-500 mb-8">Sign in to access your workspaces</p>
+              
+              {/* OAuth Buttons */}
+              <div className="space-y-3 mb-8">
+                <motion.button 
+                  whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.9)" }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleOAuth('oauth_github')}
+                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white/60 border border-slate-200 rounded-xl text-slate-800 font-semibold transition-colors shadow-sm"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Continue with GitHub
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.9)" }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleOAuth('oauth_google')}
+                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white/60 border border-slate-200 rounded-xl text-slate-800 font-semibold transition-colors shadow-sm"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 24c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 21.53 7.7 24 12 24z" />
+                    <path fill="#FBBC05" d="M5.84 15.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V8.06H2.18C1.43 9.55 1 11.22 1 13s.43 3.45 1.18 4.94l3.66-2.84z" />
+                    <path fill="#EA4335" d="M12 4.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.18 14.97 0 12 0 7.7 0 3.99 2.47 2.18 6.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                  Continue with Google
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.9)" }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleOAuth('oauth_apple')}
+                  className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white/60 border border-slate-200 rounded-xl text-slate-800 font-semibold transition-colors shadow-sm"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14.73 3.65c-.09.91-.45 1.77-1.02 2.51-.54.67-1.25 1.18-2.06 1.48-.11-.89.28-1.79.83-2.48.53-.66 1.25-1.16 2.05-1.46.06-.05.13-.05.2 0zm5.18 6.64c-.03 1.96 1.02 3.79 2.66 4.88-.63 1.83-1.55 3.51-2.73 4.96-1.12 1.34-2.28 2.64-3.66 2.7-1.43.06-2.02-.73-3.67-.73-1.63 0-2.27.75-3.62.77-1.39.02-2.67-1.36-3.88-2.82C2.5 16.71 1.09 12.35 2.37 9.17c.63-1.57 1.73-2.91 3.14-3.83 1.35-.91 2.94-1.39 4.54-1.38 1.45.02 2.78.47 3.97 1.04 1.15.54 1.82.59 2.98.05 1.04-.49 2.21-.71 3.39-.63 1.68.12 3.25.91 4.38 2.23-1.8 1.25-2.84 3.31-2.86 5.64z"/>
+                  </svg>
+                  Continue with Apple
+                </motion.button>
               </div>
-              <div>
-                <h3 className="font-semibold text-slate-50">Automated Code Stories</h3>
-                <p className="text-sm text-slate-400">Narratives for complex execution paths.</p>
+
+              <div className="flex items-center gap-4 mb-8">
+                <div className="h-px bg-slate-200 flex-1"></div>
+                <span className="text-slate-400 text-sm font-medium">OR EMAIL</span>
+                <div className="h-px bg-slate-200 flex-1"></div>
               </div>
+
+              {/* Email Form */}
+              <form onSubmit={handleEmailSignIn} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
+                  <input 
+                    type="email" 
+                    value={emailAddress}
+                    onChange={(e) => setEmailAddress(e.target.value)}
+                    className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
+                    placeholder="you@company.com"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-semibold text-slate-700 ml-1">Password</label>
+                  <input 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-white/50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+
+                <AnimatePresence>
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="text-coral-500 text-sm font-medium pt-2"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit" 
+                  disabled={loading || !emailAddress || !password}
+                  className="w-full mt-4 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium py-3.5 rounded-xl transition-colors shadow-lg shadow-indigo-600/25"
+                >
+                  {loading ? <Loader2 size={18} className="animate-spin" /> : 'Sign In'}
+                  {!loading && <ArrowRight size={18} />}
+                </motion.button>
+              </form>
             </div>
             
-            <div className="flex items-start gap-4">
-              <div className="bg-slate-800 p-2 rounded text-slate-300 mt-1">
-                <Activity size={18} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-50">Architect Mode</h3>
-                <p className="text-sm text-slate-400">Deterministic metrics for code health.</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="bg-slate-800 p-2 rounded text-slate-300 mt-1">
-                <GitMerge size={18} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-50">Architecture Replay</h3>
-                <p className="text-sm text-slate-400">Timeline scrubber for codebase evolution.</p>
-              </div>
+            <div className="mt-8 text-center text-sm">
+              <span className="text-slate-500">Don't have an account? </span>
+              <Link to="/sign-up" className="font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
+                Sign up
+              </Link>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Right Side - Custom Headless Login */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 bg-slate-950 relative">
-        <div className="w-full max-w-sm">
-          <div className="lg:hidden flex items-center gap-2 mb-10 justify-center">
-            <BookOpen size={28} className="text-blue-400" />
-            <h1 className="text-3xl font-bold text-slate-50 tracking-tight">CodeLore</h1>
-          </div>
-
-          <div className="mb-8 text-center lg:text-left">
-            <h2 className="text-2xl font-bold mb-2">Sign in to CodeLore</h2>
-            <p className="text-slate-400 text-sm">Welcome back! Please enter your details.</p>
-          </div>
-
-          <div className="space-y-4 mb-6">
-            <button 
-              onClick={() => signInWith('oauth_github')}
-              className="w-full flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-100 font-medium py-2.5 px-4 rounded-lg transition-colors shadow-sm"
-            >
-              <GitBranch size={18} />
-              Sign in with GitHub
-            </button>
-            <button 
-              onClick={() => signInWith('oauth_google')}
-              className="w-full flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-100 font-medium py-2.5 px-4 rounded-lg transition-colors shadow-sm"
-            >
-              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
-              Sign in with Google
-            </button>
-            <button 
-              onClick={() => signInWith('oauth_apple')}
-              className="w-full flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-100 font-medium py-2.5 px-4 rounded-lg transition-colors shadow-sm"
-            >
-              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.62-1.496 3.6-2.948 1.13-1.65 1.597-3.25 1.62-3.337-.034-.014-3.136-1.203-3.17-4.79-.028-2.99 2.443-4.444 2.557-4.524-1.393-2.036-3.535-2.312-4.298-2.348-2.083-.178-4.21 1.258-4.595 1.258zm-2.083-4.74c1.134-1.371 1.897-3.28 1.689-5.187-1.634.066-3.666 1.089-4.83 2.446-1.04 1.207-1.928 3.161-1.689 5.021 1.832.142 3.693-.912 4.83-2.28z"/>
-              </svg>
-              Sign in with Apple
-            </button>
-          </div>
-
-          <div className="relative flex items-center py-2 mb-6">
-            <div className="flex-grow border-t border-slate-800"></div>
-            <span className="flex-shrink-0 mx-4 text-slate-500 text-xs uppercase tracking-wider font-semibold">Or continue with email</span>
-            <div className="flex-grow border-t border-slate-800"></div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 bg-red-950/50 border border-red-900/50 rounded text-red-400 text-sm">
-                {error}
-              </div>
-            )}
-            
-            <div className="space-y-1">
-              <label className="text-sm font-semibold text-slate-300">Email address</label>
-              <input 
-                type="email" 
-                required
-                value={emailAddress}
-                onChange={(e) => setEmailAddress(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono text-sm placeholder-slate-600"
-                placeholder="you@company.com"
-              />
-            </div>
-            
-            <div className="space-y-1">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-semibold text-slate-300">Password</label>
-                <a href="#" className="text-xs text-blue-400 hover:text-blue-300 font-medium">Forgot password?</a>
-              </div>
-              <input 
-                type="password" 
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 text-slate-100 px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono text-sm placeholder-slate-600"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2"
-            >
-              {loading ? <Loader2 size={18} className="animate-spin" /> : 'Sign In'}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-slate-400 mt-8">
-            Don't have an account? <a href="#" className="text-blue-400 font-medium hover:text-blue-300">Sign up</a>
-          </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -1,20 +1,24 @@
-import { CodeParser } from './parser';
+import express from 'express';
+import cors from 'cors';
+import { runParsingPipeline } from './pipeline';
 
-const sampleCode = `
-class Example {
-  hello() {
-    console.log("World");
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.post('/v1/parse', async (req, res) => {
+  const { repositoryId, remoteUrl, workspaceId } = req.body;
+  if (!repositoryId || !remoteUrl) {
+    return res.status(400).json({ error: 'Missing repositoryId or remoteUrl' });
   }
-}
 
-function standalone() {
-  return true;
-}
-`;
+  // Kick off the background pipeline
+  runParsingPipeline(repositoryId, remoteUrl, workspaceId).catch(console.error);
 
-const parser = new CodeParser();
-const result = parser.parse(sampleCode);
+  res.json({ status: 'started' });
+});
 
-console.log("Parsed result:", JSON.stringify(result, null, 2));
-
-// Later we will connect this to a message queue or API to accept code and save to DB
+const port = process.env.PORT || 4001;
+app.listen(port, () => {
+  console.log(`Parser Service listening on port ${port}`);
+});

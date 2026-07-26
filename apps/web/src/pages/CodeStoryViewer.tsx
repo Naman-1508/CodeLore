@@ -42,7 +42,7 @@ export default function CodeStoryViewer() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-slate-400 bg-slate-950">
+      <div className="flex h-full items-center justify-center text-slate-500 bg-ivory-100">
         <Loader2 className="animate-spin mr-2" /> Loading code story...
       </div>
     );
@@ -50,7 +50,7 @@ export default function CodeStoryViewer() {
 
   if (!story || !story.steps || story.steps.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center text-slate-400 bg-slate-950 p-8 text-center">
+      <div className="flex h-full flex-col items-center justify-center text-slate-500 bg-ivory-100 p-8 text-center">
         <BookOpen size={48} className="text-slate-600 mb-6" />
         <h2 className="text-2xl font-bold text-slate-50 mb-2">Story Not Found</h2>
         <p className="mb-6 leading-relaxed max-w-lg">
@@ -66,14 +66,14 @@ export default function CodeStoryViewer() {
   const currentStep = story.steps[activeStep];
 
   return (
-    <div className="flex h-full bg-slate-950 font-sans">
+    <div className="flex h-full bg-ivory-100 font-sans">
       {/* Left Panel: Narration & Steps */}
-      <div className="w-1/3 border-r border-slate-800 bg-slate-900 p-8 overflow-y-auto flex flex-col">
-        <Link to="/dashboard" className="text-sm text-slate-400 hover:text-slate-100 mb-8 inline-flex items-center gap-1 font-medium transition-colors">
+      <div className="w-1/3 border-r border-slate-200 glass-panel p-8 overflow-y-auto flex flex-col">
+        <Link to="/dashboard" className="text-sm text-slate-500 hover:text-slate-900 mb-8 inline-flex items-center gap-1 font-medium transition-colors">
           <ChevronLeft size={16} /> Back to Dashboard
         </Link>
-        <h1 className="text-2xl font-bold text-slate-50 mb-2">{story.title}</h1>
-        <p className="text-slate-400 text-sm mb-10 leading-relaxed">{story.description}</p>
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">{story.title}</h1>
+        <p className="text-slate-600 text-sm mb-10 leading-relaxed">{story.description}</p>
         
         <div className="space-y-6 flex-grow">
           {story.steps.map((step: any, index: number) => {
@@ -84,23 +84,23 @@ export default function CodeStoryViewer() {
                 onClick={() => setActiveStep(index)}
                 className={`cursor-pointer transition-all border-l-2 p-5 shadow-sm rounded-r-md border-y border-r ${
                   isActive 
-                    ? 'border-l-blue-500 bg-slate-950 border-y-slate-800 border-r-slate-800' 
-                    : 'border-l-slate-700 bg-slate-900 border-y-slate-800 border-r-slate-800 opacity-60 hover:opacity-100'
+                    ? 'border-l-indigo-500 bg-white border-y-slate-200 border-r-slate-200 shadow-sm' 
+                    : 'border-l-slate-300 bg-white/50 border-y-slate-200 border-r-slate-200 opacity-60 hover:opacity-100'
                 }`}
               >
                 <div className="flex items-center gap-3 mb-3">
                   <span className={`text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide border ${
                     isActive 
-                      ? 'bg-blue-950 text-blue-400 border-blue-900' 
-                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200' 
+                      : 'bg-slate-100 text-slate-500 border-slate-200'
                   }`}>
                     Step {index + 1}
                   </span>
-                  <span className={`font-mono text-sm font-semibold ${isActive ? 'text-slate-50' : 'text-slate-300'}`}>
+                  <span className={`font-mono text-sm font-semibold ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>
                     {step.function?.name || 'Unknown Function'}
                   </span>
                 </div>
-                <p className={`${isActive ? 'text-slate-300' : 'text-slate-500'} text-sm leading-relaxed`}>
+                <p className={`${isActive ? 'text-slate-700' : 'text-slate-500'} text-sm leading-relaxed`}>
                   {step.narration}
                 </p>
               </div>
@@ -108,12 +108,12 @@ export default function CodeStoryViewer() {
           })}
         </div>
 
-        <div className="flex justify-between mt-10 pt-6 border-t border-slate-800">
+        <div className="flex justify-between mt-10 pt-6 border-t border-slate-200">
           <button 
             disabled={activeStep === 0}
             onClick={() => setActiveStep(Math.max(0, activeStep - 1))}
             className={`flex items-center gap-1 text-sm font-medium transition-colors ${
-              activeStep === 0 ? 'text-slate-600 cursor-not-allowed' : 'text-slate-300 hover:text-slate-50'
+              activeStep === 0 ? 'text-slate-400 cursor-not-allowed' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <ChevronLeft size={16} /> Prev
@@ -122,7 +122,7 @@ export default function CodeStoryViewer() {
             disabled={activeStep === story.steps.length - 1}
             onClick={() => setActiveStep(Math.min(story.steps.length - 1, activeStep + 1))}
             className={`flex items-center gap-1 text-sm font-medium transition-colors ${
-              activeStep === story.steps.length - 1 ? 'text-slate-600 cursor-not-allowed' : 'text-blue-400 hover:text-blue-300'
+              activeStep === story.steps.length - 1 ? 'text-slate-400 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-700'
             }`}
           >
             Next <ChevronRight size={16} />
@@ -131,9 +131,9 @@ export default function CodeStoryViewer() {
       </div>
       
       {/* Right Panel: Source Code */}
-      <div className="w-2/3 bg-slate-950 text-slate-300 p-8 overflow-y-auto font-mono text-sm">
-        <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-6">
-          <span className="text-slate-400 font-semibold">{currentStep?.function?.file?.path || 'Unknown File'}</span>
+      <div className="w-2/3 bg-ivory-100 text-slate-700 p-8 overflow-y-auto font-mono text-sm">
+        <div className="flex justify-between items-center border-b border-slate-200 pb-4 mb-6">
+          <span className="text-slate-500 font-semibold">{currentStep?.function?.file?.path || 'Unknown File'}</span>
         </div>
         <pre className="leading-relaxed whitespace-pre-wrap">
 <code>{currentStep?.function?.signature || '// Code chunk loading failed.'}</code>

@@ -1,12 +1,63 @@
 @import "tailwindcss";
 
 @theme {
-  --color-slate-950: #0a0a0b;
+  --color-ivory-50: #ffffff;
+  --color-ivory-100: #faf8f5;
+  --color-ivory-200: #f0ebe1;
+  --color-ivory-300: #e2d9cd;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-coral-400: #ff8c78;
+  --color-coral-500: #ff7e67;
+  --color-indigo-500: #6366f1;
+  --color-indigo-600: #4f46e5;
+  --color-mint-400: #6ee7b7;
 }
 
 body {
-  background-color: var(--color-slate-950);
-  color: #f1f5f9;
+  background-color: var(--color-ivory-100);
+  color: var(--color-slate-900);
+  margin: 0;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Ambient Background - Soft Aurora */
+.ambient-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.08), transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(255, 126, 103, 0.06), transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(110, 231, 183, 0.06), transparent 50%);
+  filter: blur(60px);
+  animation: breathe 15s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Light Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
 }
 
 /* Hide Clerk Watermark */
