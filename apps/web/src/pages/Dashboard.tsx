@@ -461,14 +461,15 @@ export default function Dashboard() {
   );
 }
 
-function MetricBar({ label, value, max, color }: { label: string, value: number, max: number, color: string }) {
-  const percentage = (value / max) * 100;
+function MetricBar({ label, value, max, color }: { label: string, value: number | undefined, max: number, color: string }) {
+  const safeValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+  const percentage = (safeValue / max) * 100;
   
   return (
     <div>
       <div className="flex justify-between text-sm mb-2">
         <span className="text-slate-400 font-medium">{label}</span>
-        <span className="text-white font-bold">{value.toFixed(1)} / {max}</span>
+        <span className="text-white font-bold">{safeValue.toFixed(1)} / {max}</span>
       </div>
       <div className="w-full bg-midnight-200/50 rounded-full h-2.5 overflow-hidden shadow-inner border border-white/5">
         <motion.div 
