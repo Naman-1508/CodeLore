@@ -1,159 +1,131 @@
-# Turborepo starter
+<div align="center">
+  <br />
+  <h1>🌌 CodeLore</h1>
+  <p><strong>Advanced Codebase Architecture Mapping & Dependency Engine</strong></p>
+  <br />
+</div>
 
-This Turborepo starter is maintained by the Turborepo core team.
+## 📖 Overview
 
-## Using this example
+CodeLore is an enterprise-grade repository intelligence platform. The core foundation of this application is a **Deterministic Abstract Syntax Tree (AST) Parser and Dependency Graph Engine**. It autonomously maps out complex codebases, revealing structural dependencies, blast radiuses, and modularity metrics.
 
-Run the following command:
+While many tools rely heavily on AI to guess how a codebase works, CodeLore uses rigid, exact parsing (via Tree-sitter) to build a mathematically accurate graph of your code. **AI is utilized strictly as a secondary functionality**—specifically to narrate the parsed data (Code Stories) and generate semantic search embeddings. The foundation of the application is purely deterministic static analysis.
 
-```sh
-npx create-turbo@latest
+## ✨ Core Functionalities
+
+### 1. Deterministic AST Parsing & Indexing
+- **Tree-sitter Integration**: CodeLore uses `tree-sitter` to parse code into ASTs with exact precision, supporting TypeScript, JavaScript, Python, and Java.
+- **Dependency Graph Construction**: Every function, class, and method call is extracted and linked, building a complete `CallEdges` graph in the database.
+- **Blast Radius Analysis**: Before modifying a function, developers can traverse the graph to see exactly which downstream services and upstream callers will be impacted.
+
+### 2. AI-Powered Enhancements (Secondary Features)
+- **Code Stories**: Once the AST graph is built, CodeLore traces execution paths (entry point to database layer) and uses Google Gemini to generate human-readable "narratives" of the flow.
+- **Semantic Search**: Code snippets are embedded using `text-embedding-004` (via Gemini) and stored in PostgreSQL using `pgvector`, allowing natural language queries against the codebase.
+
+### 3. Architecture Health Scoring
+- **Modularity Score**: Evaluates the ratio of internal module calls versus cross-module dependencies.
+- **Coupling Index**: Detects "God Classes" and tightly coupled services based on the density of the call graph.
+
+---
+
+## 🏗 Architecture & Tech Stack
+
+CodeLore is architected as a high-performance **Turborepo** monorepo, separating concerns into discrete, scalable microservices.
+
+### Tech Stack Deep-Dive
+- **Frontend (`apps/web`)**: 
+  - React, Vite, Tailwind CSS, Framer Motion for a premium, hardware-accelerated "Midnight Aurora" UI.
+- **API Gateway (`services/api-gateway`)**: 
+  - Node.js/Express service that securely routes requests between the client and the core engine.
+- **Core Engine (`services/core-engine/parser-service`)**: 
+  - The heavy-lifting backend worker. It clones git repositories, invokes Tree-sitter parsers, runs graph traversal algorithms, and manages background jobs.
+- **Database (`packages/database`)**: 
+  - PostgreSQL hosted on Neon.tech.
+  - Interfaced via Drizzle ORM.
+  - Utilizes `pgvector` for high-dimensional semantic search.
+
+### Database Schema Highlights
+- `repositories`: Tracks indexed Git repositories.
+- `files`, `functions`, `classes`: The structural hierarchy of the parsed code.
+- `callEdges`: The many-to-many relationship mapping which function calls which other function.
+- `architectureSnapshots`: Point-in-time metrics (Health, Modularity).
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to set up a local development environment.
+
+### 1. Prerequisites
+- **Node.js** v18+
+- **npm** v9+
+- A [Neon.tech](https://neon.tech/) PostgreSQL Database (with `pgvector` extension enabled)
+- A [Clerk](https://clerk.com/) Account (for Authentication)
+- A [Google Gemini API Key](https://aistudio.google.com/)
+
+### 2. Environment Variables
+Create a `.env` file in the root of the project. **CodeLore uses a single, global `.env` file to manage secrets across all microservices.**
+
+```env
+# Database (Neon PostgreSQL)
+DATABASE_URL="postgresql://user:password@host/dbname?sslmode=require"
+
+# Authentication (Clerk)
+VITE_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
+
+# AI Config (Global Instance Key)
+GEMINI_API_KEY="your_gemini_api_key"
+
+# Service Routing
+PARSER_SERVICE_URL="http://localhost:4001"
 ```
 
-## What's inside?
+### 3. Installation
 
-This Turborepo includes the following packages/apps:
+Install all dependencies using npm workspaces (Turborepo):
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+npm install
 ```
 
-Without global `turbo`, use your package manager:
+### 4. Database Initialization
 
-```sh
-cd my-turborepo
-npx turbo build
-npm dlx turbo build
-npm exec turbo build
+Push the Drizzle schema to your live database and seed the default workspace:
+
+```bash
+# Apply the schema to the remote database
+npm run migrate --workspace=packages/database
+
+# Seed the initial mock data (Optional)
+npx tsx seed.ts
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+*Important: You must execute `CREATE EXTENSION IF NOT EXISTS vector;` on your Neon database before running migrations.*
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+### 5. Running the Platform
 
-```sh
-turbo build --filter=docs
+Run all services concurrently:
+
+```bash
+npm run dev
 ```
 
-Without global `turbo`:
+The services will start at the following endpoints:
+- **Web UI**: `http://localhost:5173`
+- **API Gateway**: `http://localhost:4000`
+- **Core Engine**: `http://localhost:4001`
 
-```sh
-npx turbo build --filter=docs
-npm exec turbo build --filter=docs
-npm exec turbo build --filter=docs
-```
+---
 
-### Develop
+## 🤝 Contributing Guidelines
 
-To develop all apps and packages, run the following command:
+1. **Architecture First**: Any new feature must respect the boundary between the Core Engine (heavy lifting/parsing) and the API Gateway (client serving).
+2. **Deterministic Processing**: Do not rely on LLMs to parse or structure code. AI is strictly for natural language generation and embeddings. All logic must be deterministic.
+3. **Pull Requests**: Follow the standard branching model (`feature/your-feature`), ensure tests pass, and submit a PR for review.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+---
 
-```sh
-cd my-turborepo
-turbo dev
-```
+## 📄 License
 
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-npm exec turbo dev
-npm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-npm exec turbo dev --filter=web
-npm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-npm exec turbo login
-npm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-npm exec turbo link
-npm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Distributed under the MIT License. See `LICENSE` for more information.

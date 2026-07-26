@@ -10,30 +10,13 @@ export default function WorkspaceSettings() {
       <div className="bg-midnight-100/10 border border-white/10 rounded-lg p-6 shadow-sm backdrop-blur-md">
         <h2 className="text-xl font-bold text-slate-50 mb-4">AI Provider Configuration</h2>
         <div className="flex flex-col gap-4">
-          <label className="flex flex-col gap-2 text-sm font-medium text-slate-300">
-            Select Provider
-            <select 
-              value={provider} 
-              onChange={(e) => setProvider(e.target.value)} 
-              className="border border-white/10 p-2 rounded bg-midnight-100 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
-            >
-              <option value="groq">Groq (Llama-3-70b)</option>
-              <option value="gemini">Google Gemini (Gemini-1.5-Pro)</option>
-              <option value="openai">OpenAI (GPT-4o)</option>
-            </select>
-          </label>
-          <label className="flex flex-col gap-2 text-sm font-medium text-slate-300">
-            API Key
-            <input 
-              type="password" 
-              placeholder={`Enter your ${provider === 'groq' ? 'Groq' : provider === 'gemini' ? 'Gemini' : 'OpenAI'} API Key...`} 
-              className="border border-white/10 bg-midnight-100 text-white p-2 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono text-sm placeholder-slate-400"
-              aria-label={`${provider} API Key input`}
-            />
-          </label>
-          <button className="bg-midnight-100 text-slate-950 px-4 py-2 rounded-md hover:bg-slate-200 transition-colors mt-4 self-start font-semibold text-sm">
-            Save Settings
-          </button>
+          <p className="text-sm text-slate-400">
+            AI features are currently configured globally via the server environment variables (<code className="text-mint-400 bg-midnight-50 px-1 py-0.5 rounded">.env</code>). 
+            CodeLore uses your designated API key to generate code narrations and semantic embeddings.
+          </p>
+          <p className="text-sm text-slate-400">
+            No further configuration is required.
+          </p>
         </div>
       </div>
     </div>
