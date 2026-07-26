@@ -22,7 +22,7 @@ ${codeSnippet}
 Generate a highly descriptive, architectural summary for the above code snippet. Focus ONLY on its purpose and its role in the larger system. Do NOT include any filler language, pleasantries, or introductory phrases (e.g. "Here is the summary", "This code snippet..."). Do NOT hallucinate dependencies not present in the code. Keep it to strictly 1-2 sentences of raw, factual technical description.`;
 
     const response = await this.ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: prompt,
     });
     
@@ -39,7 +39,7 @@ Generate a highly descriptive, architectural summary for the above code snippet.
     const fullPrompt = contextPrompt + mappedMessages.join('\n\n');
 
     const response = await this.ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: fullPrompt,
     });
     
