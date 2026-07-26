@@ -7,9 +7,8 @@ dotenv.config({ path: resolve(__dirname, '../../.env') });
 import express, { Request, Response, RequestHandler } from 'express';
 import cors from 'cors';
 import { GoogleGenAI } from '@google/genai';
-import { cosineDistance, desc, sql } from 'drizzle-orm';
 import { ClerkExpressRequireAuth, StrictAuthProp } from '@clerk/clerk-sdk-node';
-import { createDbConnection, eq, repositories, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps, users, workspaces, files } from '@repo/database';
+import { createDbConnection, eq, sql, desc, repositories, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps, users, workspaces, files } from '@repo/database';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
@@ -193,8 +192,8 @@ app.get('/v1/repositories/:id/architect-findings', async (req, res) => {
     
     // Return the actual metrics JSON as findings if it exists
     const snap = snapshots[0];
-    if (snap.metricsJson) {
-      const metrics = typeof snap.metricsJson === 'string' ? JSON.parse(snap.metricsJson) : snap.metricsJson;
+    if (snap.moduleMapJson) {
+      const metrics = typeof snap.moduleMapJson === 'string' ? JSON.parse(snap.moduleMapJson) : snap.moduleMapJson;
       const findings = [];
       if (metrics.couplingIndex > 50) {
         findings.push({ id: 'f1', type: 'highly_coupled', severity: 'high', description: `High coupling index detected (${metrics.couplingIndex.toFixed(1)}). Code is highly interdependent.` });
@@ -263,7 +262,7 @@ app.get('/v1/repositories/:id/health', async (req, res) => {
     
     try {
       const snap = snapshots[0];
-      const metrics = typeof snap.metricsJson === 'string' ? JSON.parse(snap.metricsJson) : snap.metricsJson;
+      const metrics = typeof snap.moduleMapJson === 'string' ? JSON.parse(snap.moduleMapJson) : snap.moduleMapJson;
       res.json({ 
         status: metrics.couplingIndex > 50 ? 'warning' : 'healthy', 
         issues: (metrics.couplingIndex > 50 ? 1 : 0) + (metrics.modularityScore < 40 ? 1 : 0),

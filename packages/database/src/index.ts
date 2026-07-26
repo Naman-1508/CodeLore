@@ -10,4 +10,4 @@ export const createDbConnection = (connectionString: string) => {
 };
 
 export * from './schema';
-export { eq, and, or, inArray, desc, asc } from 'drizzle-orm';
+export { eq, and, or, inArray, desc, asc, sql, cosineDistance } from 'drizzle-orm';
