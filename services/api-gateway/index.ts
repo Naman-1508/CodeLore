@@ -1,10 +1,13 @@
-import express from 'express';
+import * as dotenv from 'dotenv';
+import { resolve } from 'path';
+
+// Load environment variables from the root .env file
+dotenv.config({ path: resolve(__dirname, '../../.env') });
+
+import express, { Request, Response, RequestHandler } from 'express';
 import cors from 'cors';
 import { ClerkExpressRequireAuth, StrictAuthProp } from '@clerk/clerk-sdk-node';
 import { createDbConnection, eq, repositories, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps, users, workspaces } from '@repo/database';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const app = express();
 
@@ -83,6 +86,7 @@ app.post('/v1/repositories', async (req, res) => {
 
     res.json(result[0]);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to create repository' });
   }
 });
