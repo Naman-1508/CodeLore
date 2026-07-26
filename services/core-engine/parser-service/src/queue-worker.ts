@@ -1,61 +1,40 @@
-import { GroqAdapter } from './groq-adapter';
+import { Worker, Job } from 'bullmq';
+import IORedis from 'ioredis';
+import { runParsingPipeline } from './pipeline';
 
 export class PostgresQueueWorker {
-  private llm: GroqAdapter;
-  private isRunning: boolean = false;
+  private worker: Worker;
 
-  constructor(llm: GroqAdapter) {
-    this.llm = llm;
+  constructor() {
+    console.log('[QueueWorker] Initializing BullMQ Worker...');
+    
+    const redisConnection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+      maxRetriesPerRequest: null,
+      tls: process.env.REDIS_URL?.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined
+    });
+
+    this.worker = new Worker('parser-queue', async (job: Job) => {
+      console.log(`[QueueWorker] Processing job ${job.id} of type ${job.name}`);
+      if (job.name === 'parse-repo') {
+        const { repositoryId, remoteUrl, workspaceId } = job.data;
+        await runParsingPipeline(repositoryId, remoteUrl, workspaceId);
+      }
+    }, { connection: redisConnection });
+
+    this.worker.on('completed', (job) => {
+      console.log(`[QueueWorker] Job ${job.id} has completed!`);
+    });
+
+    this.worker.on('failed', (job, err) => {
+      console.error(`[QueueWorker] Job ${job?.id} has failed with ${err.message}`);
+    });
   }
 
   startPolling() {
-    this.isRunning = true;
-    console.log('[QueueWorker] Started polling Postgres background_job table...');
-    this.poll();
+    console.log('[QueueWorker] Worker is listening for jobs...');
   }
 
   stopPolling() {
-    this.isRunning = false;
-  }
-
-  private async poll() {
-    if (!this.isRunning) return;
-
-    // Simulate querying database: SELECT * FROM background_job WHERE status = 'pending' LIMIT 1 FOR UPDATE SKIP LOCKED
-    // console.log('[QueueWorker] Polling for jobs...');
-    
-    // Process job if found...
-    
-    setTimeout(() => this.poll(), 5000);
-  }
-
-  async processDocstringJob(jobId: string, functionId: string, codeSnippet: string) {
-    console.log(`[QueueWorker] Processing docstring generation for function ${functionId}`);
-    try {
-      const docstring = await this.llm.generateDocstring(codeSnippet, []);
-      // Simulate updating database: UPDATE function SET docstring = $1 WHERE id = $2
-      console.log(`[QueueWorker] Saved docstring: ${docstring}`);
-      // Simulate UPDATE background_job SET status = 'completed' WHERE id = jobId
-    } catch (e) {
-      console.error(`[QueueWorker] Job failed:`, e);
-      // Simulate UPDATE background_job SET status = 'failed' WHERE id = jobId
-    }
-  }
-
-  async processAiNarrationJob(jobId: string, targetType: string, targetId: string, contextFacts: string[]) {
-    console.log(`[QueueWorker] Processing AI narration for ${targetType} ${targetId}`);
-    let narrationText = '';
-    let fallbackUsed = false;
-    try {
-      const messages = [{ role: 'user', content: `Narrate this ${targetType} clearly.` }];
-      narrationText = await this.llm.chat(messages, contextFacts);
-    } catch (e) {
-      console.error(`[QueueWorker] LLM failed, using deterministic fallback for ${targetId}`, e);
-      fallbackUsed = true;
-      narrationText = `Deterministic Fallback: This is a ${targetType}.`;
-    }
-    
-    // Simulate inserting into ai_narration table
-    console.log(`[QueueWorker] Saved narration (fallback=${fallbackUsed}): ${narrationText}`);
+    this.worker.close();
   }
 }

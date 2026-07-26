@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSignUp } from '@clerk/clerk-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, ArrowRight, ShieldCheck, Mail } from 'lucide-react';
+import { Loader2, ArrowRight, ShieldCheck, Mail, Code2, Globe, Shield, Activity, GitMerge, Search, Network } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function CustomSignUp() {
@@ -95,44 +95,130 @@ export default function CustomSignUp() {
     }
   };
 
+  const features = [
+    { icon: <Code2 className="text-cyan-400" size={28} />, title: "Automated AST Parsing", desc: "Instantly break down codebases." },
+    { icon: <Shield className="text-coral-500" size={28} />, title: "Architecture Health", desc: "Monitor modularity and coupling." },
+    { icon: <GitMerge className="text-cyan-400" size={28} />, title: "PR Impact Analysis", desc: "See the blast radius of changes." },
+    { icon: <Search className="text-mint-500" size={28} />, title: "Semantic Search", desc: "Find exact architectural patterns." },
+    { icon: <Activity className="text-indigo-400" size={28} />, title: "Code Stories", desc: "Auto-generated walkthroughs." }
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % features.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const RADIUS = 350; 
+  const ANGLE_STEP = 25; 
+
   return (
-    <div className="min-h-screen relative overflow-hidden bg-transparent flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Background Gradients */}
+    <div className="flex min-h-screen bg-transparent overflow-hidden relative">
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-mint-400/10 rounded-full blur-[120px] mix-blend-multiply" />
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-cyan-500/100/10 rounded-full blur-[120px] mix-blend-multiply" />
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px]" />
       </div>
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <div className="bg-midnight-100 p-3 rounded-2xl w-16 h-16 mx-auto mb-4 shadow-sm border border-slate-100 flex items-center justify-center">
-            {pendingVerification ? (
-              <ShieldCheck className="text-mint-500" size={32} />
-            ) : (
-              <Mail className="text-cyan-400" size={32} />
-            )}
+      <div className="relative z-10 flex flex-col lg:flex-row w-full h-screen items-center">
+        
+        {/* Left Side: Rotary Auth Value Prop */}
+        <div className="hidden lg:flex w-1/2 h-full relative items-center justify-center border-r border-white/5">
+          <motion.div 
+            className="absolute top-1/2 left-0 w-[800px] h-[800px] rounded-full border border-cyan-500/20 bg-midnight-200/30 shadow-[inset_0_0_80px_rgba(6,182,212,0.1)] backdrop-blur-md"
+            style={{ originX: 0.5, originY: 0.5, x: '-60%', y: '-50%' }}
+            animate={{ rotate: -(currentIndex * ANGLE_STEP) }}
+            transition={{ type: "spring", stiffness: 50, damping: 15 }}
+          >
+            {features.map((feat, i) => {
+              const angle = (i * ANGLE_STEP) * (Math.PI / 180);
+              const x = 400 + Math.cos(angle) * RADIUS; 
+              const y = 400 + Math.sin(angle) * RADIUS;
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute w-20 h-20 -ml-10 -mt-10 rounded-full flex items-center justify-center bg-slate-900 border border-white/10 shadow-2xl transition-colors"
+                  style={{ left: x, top: y }}
+                  animate={{ rotate: (currentIndex * ANGLE_STEP) }}
+                  transition={{ type: "spring", stiffness: 50, damping: 15 }}
+                >
+                  <div className={i === currentIndex ? "text-white scale-110 transition-transform" : "text-slate-600"}>
+                    {feat.icon}
+                  </div>
+                </motion.div>
+              );
+            })}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full border border-dashed border-white/5" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] rounded-full border border-cyan-500/10 bg-midnight-200/50" />
+          </motion.div>
+
+          <div className="ml-[250px] z-10 max-w-sm">
+            <motion.div 
+              className="mb-8 inline-flex items-center gap-3 px-4 py-2 rounded-full bg-slate-900/50 border border-cyan-500/30 shadow-sm backdrop-blur-md"
+            >
+              <Network size={20} className="text-cyan-400" />
+              <span className="text-md tracking-widest uppercase font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500">CodeLore</span>
+            </motion.div>
+            
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4 }}
+              >
+                <h1 className="text-4xl font-extrabold text-white leading-tight tracking-tight mb-4">
+                  {features[currentIndex].title}
+                </h1>
+                <p className="text-lg text-slate-400 leading-relaxed mb-8">
+                  {features[currentIndex].desc}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+            
+            <div className="flex gap-3 mt-4 pointer-events-none">
+              {features.map((_, i) => (
+                <div 
+                  key={i} 
+                  className={`h-1.5 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-cyan-400 w-8' : 'bg-white/20 w-3'}`} 
+                />
+              ))}
+            </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">
-            {pendingVerification ? 'Verify your email' : 'Create an account'}
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
-            {pendingVerification 
-              ? `We sent a code to ${emailAddress}` 
-              : 'Join CodeLore to index your first repository'}
-          </p>
-        </motion.div>
-      </div>
+        </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-panel py-8 px-4 shadow-[0_8px_30px_rgb(0,0,0,0.4)] sm:rounded-3xl sm:px-10 border border-white/10/60 backdrop-blur-xl bg-midnight-100/5"
-        >
+        {/* Right Side: Form */}
+        <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
+          >
+            <div className="bg-midnight-100 p-3 rounded-2xl w-16 h-16 mx-auto mb-4 shadow-sm border border-slate-100 flex items-center justify-center">
+              {pendingVerification ? (
+                <ShieldCheck className="text-mint-500" size={32} />
+              ) : (
+                <Mail className="text-cyan-400" size={32} />
+              )}
+            </div>
+            <h2 className="text-3xl font-extrabold text-white tracking-tight">
+              {pendingVerification ? 'Verify your email' : 'Create an account'}
+            </h2>
+            <p className="mt-2 text-sm text-slate-400">
+              {pendingVerification 
+                ? `We sent a code to ${emailAddress}` 
+                : 'Join CodeLore to index your first repository'}
+            </p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md glass-panel py-8 px-4 shadow-[0_8px_30px_rgb(0,0,0,0.4)] sm:rounded-3xl sm:px-10 border border-white/10/60 backdrop-blur-xl bg-midnight-100/5"
+          >
           <AnimatePresence mode="wait">
             {!pendingVerification ? (
               <motion.form 
@@ -267,6 +353,7 @@ export default function CustomSignUp() {
             </div>
           )}
         </motion.div>
+        </div>
       </div>
     </div>
   );

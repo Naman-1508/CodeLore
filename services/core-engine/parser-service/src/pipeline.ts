@@ -2,8 +2,11 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
-import { createDbConnection, eq, repositories, files, classes, functions, callEdges } from '@repo/database';
+import { createDbConnection, eq, repositories, files, classes, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps } from '@repo/database';
 import { CodeParser, ParsedFunction } from './parser';
+import { HealthScorer } from './health-scorer';
+import { CodeStoryGenerator } from './code-story-generator';
+import { GeminiAdapter } from './gemini-adapter';
 
 const execAsync = promisify(exec);
 const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/codelore';
@@ -129,7 +132,67 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
       }
     }
 
-    // 5. Cleanup and mark ready
+    // 5. Run Health Scorer and AI Generators
+    console.log('Running AI generation and heuristics...');
+    const allDbFiles = await db.query.files.findMany({ where: eq(files.repositoryId, repositoryId) });
+    const allDbFunctions = await db.query.functions.findMany();
+    
+    // Map file id to repository id
+    const fileToRepoMap = new Map();
+    for (const f of allDbFiles) fileToRepoMap.set(f.id, f.repositoryId);
+
+    // Filter functions by this repo manually to avoid complex subqueries for MVP
+    const repoFunctions = allDbFunctions.filter(f => fileToRepoMap.get(f.fileId) === repositoryId);
+    
+    // Calculate health
+    const health = HealthScorer.calculateScore(repositoryId, allDbFiles, repoFunctions, edgesToInsert);
+    await db.insert(architectureSnapshots).values({
+      repositoryId,
+      modularityScore: health.modularityScore,
+      couplingIndex: health.couplingIndex.toString(),
+      metricsJson: health.metricsJson
+    });
+
+    // Generate Code Stories
+    if (process.env.GEMINI_API_KEY) {
+      const aiAdapter = new GeminiAdapter(process.env.GEMINI_API_KEY);
+      // Mock finding an entry point (e.g. index.ts or main)
+      const entryPoints = repoFunctions.filter(f => f.name.includes('index') || f.name.includes('main') || f.name.includes('App'));
+      if (entryPoints.length > 0) {
+        
+        // CodeStoryGenerator expects functionsDbMap by ID. Let's create it:
+        const functionsDbMap = new Map();
+        for (const fn of repoFunctions) functionsDbMap.set(fn.id, fn);
+        
+        const actualStories = await CodeStoryGenerator.generateBaselineStories(
+          repositoryId, 
+          entryPoints.slice(0, 1), 
+          edgesToInsert, 
+          functionsDbMap, 
+          aiAdapter
+        );
+        
+        for (const story of actualStories) {
+          const [dbStory] = await db.insert(codeStories).values({
+            repositoryId,
+            title: story.title,
+            description: story.description,
+            entryFunctionId: story.entryFunctionId
+          }).returning();
+          
+          for (const step of story.steps) {
+            await db.insert(codeStorySteps).values({
+              storyId: dbStory.id,
+              order: step.order,
+              functionId: step.functionId,
+              narration: step.narration
+            });
+          }
+        }
+      }
+    }
+
+    // 6. Cleanup and mark ready
     await fs.rm(tmpDir, { recursive: true, force: true });
     
     await db.update(repositories)

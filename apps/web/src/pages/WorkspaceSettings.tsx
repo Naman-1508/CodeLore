@@ -1,7 +1,4 @@
-import { useState } from 'react';
-
 export default function WorkspaceSettings() {
-  const [provider, setProvider] = useState('groq');
   
   return (
     <div className="p-8 max-w-4xl mx-auto" role="main" aria-label="Workspace Settings">

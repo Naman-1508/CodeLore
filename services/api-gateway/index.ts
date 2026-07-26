@@ -6,10 +6,22 @@ dotenv.config({ path: resolve(__dirname, '../../.env') });
 
 import express, { Request, Response, RequestHandler } from 'express';
 import cors from 'cors';
+import { GoogleGenAI } from '@google/genai';
+import { cosineDistance, desc, sql } from 'drizzle-orm';
 import { ClerkExpressRequireAuth, StrictAuthProp } from '@clerk/clerk-sdk-node';
-import { createDbConnection, eq, repositories, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps, users, workspaces } from '@repo/database';
+import { createDbConnection, eq, repositories, functions, callEdges, architectureSnapshots, codeStories, codeStorySteps, users, workspaces, files } from '@repo/database';
+import { Queue } from 'bullmq';
+import IORedis from 'ioredis';
 
 const app = express();
+
+const redisConnection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  maxRetriesPerRequest: 3, // Changed from null so it doesn't hang indefinitely on bad connections
+  connectTimeout: 2000,
+  tls: process.env.REDIS_URL?.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined
+});
+const parseQueue = new Queue('parser-queue', { connection: redisConnection });
+
 
 app.use(cors());
 app.use(express.json());
@@ -66,28 +78,36 @@ app.post('/v1/repositories', async (req, res) => {
       workspaceId: ws.id,
       name: remoteUrl.split('/').pop()?.replace('.git', '') || 'Unknown Repo',
       indexingStatus: 'pending'
+    }).onConflictDoUpdate({
+      target: [repositories.workspaceId, repositories.remoteUrl],
+      set: { indexingStatus: 'pending' }
     }).returning();
     
-    // Kick off parsing
+    // Kick off parsing by adding to BullMQ
     try {
-      const parserUrl = process.env.PARSER_SERVICE_URL || 'http://localhost:4001';
-      await fetch(`${parserUrl}/v1/parse`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          repositoryId: result[0].id,
-          remoteUrl,
-          workspaceId: ws.id
-        })
+      await parseQueue.add('parse-repo', {
+        repositoryId: result[0].id,
+        remoteUrl,
+        workspaceId: ws.id
       });
+      console.log(`Added parsing job for repo ${result[0].id} to queue.`);
     } catch (e) {
-      console.error('Failed to notify parser service', e);
+      console.error('Failed to add job to queue', e);
     }
 
     res.json(result[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to create repository' });
+  }
+});
+
+app.get('/v1/repositories', async (req, res) => {
+  try {
+    const repos = await db.query.repositories.findMany();
+    res.json(repos);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
@@ -122,18 +142,19 @@ app.get('/v1/repositories/:id/status', async (req, res) => {
 // --- Function Explorer & Blast Radius Routes ---
 app.get('/v1/repositories/:id/functions', async (req, res) => {
   try {
-    // This requires joining with files to filter by repositoryId. 
-    // For simplicity, we just fetch all functions if repository context is implied by DB schema limits.
-    // Actually, we must join files.
-    const allFunctions = await db.query.functions.findMany({
-      with: {
-        file: true
-      },
-      limit: 100
-    });
-    
-    // Filter by repo in memory for now
-    const repoFunctions = allFunctions.filter(f => (f.file as any)?.repositoryId === req.params.id);
+    const repoFunctions = await db.select({
+      id: functions.id,
+      name: functions.name,
+      signature: functions.signature,
+      startLine: functions.startLine,
+      endLine: functions.endLine,
+      complexityScore: functions.complexityScore,
+      isEntryPoint: functions.isEntryPoint
+    })
+    .from(functions)
+    .innerJoin(files, eq(functions.fileId, files.id))
+    .where(eq(files.repositoryId, req.params.id))
+    .limit(100);
     res.json(repoFunctions);
   } catch (err) {
     console.error(err);
@@ -155,12 +176,21 @@ app.get('/v1/repositories/:id/architect-findings', async (req, res) => {
       return res.json([]);
     }
     
-    // The UI expects an array of findings
-    // For now, let's just return some mock findings so the UI populates
-    res.json([
-      { id: 'f1', type: 'highly_coupled', severity: 'high', description: 'Authentication service is tightly coupled with User Profile module.' },
-      { id: 'f2', type: 'god_class', severity: 'medium', description: 'Core parser engine has grown beyond 2000 lines and handles too many responsibilities.' }
-    ]);
+    // Return the actual metrics JSON as findings if it exists
+    const snap = snapshots[0];
+    if (snap.metricsJson) {
+      const metrics = typeof snap.metricsJson === 'string' ? JSON.parse(snap.metricsJson) : snap.metricsJson;
+      const findings = [];
+      if (metrics.couplingIndex > 50) {
+        findings.push({ id: 'f1', type: 'highly_coupled', severity: 'high', description: `High coupling index detected (${metrics.couplingIndex.toFixed(1)}). Code is highly interdependent.` });
+      }
+      if (metrics.modularityScore < 40) {
+         findings.push({ id: 'f2', type: 'low_modularity', severity: 'medium', description: `Modularity score is low (${metrics.modularityScore.toFixed(1)}). Consider breaking down large files.` });
+      }
+      return res.json(findings);
+    }
+    
+    return res.json([]);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch findings' });
   }
@@ -217,8 +247,14 @@ app.get('/v1/repositories/:id/health', async (req, res) => {
     }
     
     try {
-      // Mock health data instead of trying to read undefined metricsJson
-      res.json({ status: 'healthy', issues: 0 });
+      const snap = snapshots[0];
+      const metrics = typeof snap.metricsJson === 'string' ? JSON.parse(snap.metricsJson) : snap.metricsJson;
+      res.json({ 
+        status: metrics.couplingIndex > 50 ? 'warning' : 'healthy', 
+        issues: (metrics.couplingIndex > 50 ? 1 : 0) + (metrics.modularityScore < 40 ? 1 : 0),
+        modularityScore: metrics.modularityScore,
+        couplingIndex: metrics.couplingIndex
+      });
     } catch {
       res.json(null);
     }
@@ -245,6 +281,50 @@ app.get('/v1/repositories/:id/ownership', async (req, res) => {
     res.json({ topContributors: [], recentPRs: [] });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch ownership' });
+  }
+});
+
+// --- Semantic Search ---
+app.post('/v1/repositories/:id/search', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query) return res.status(400).json({ error: 'Missing query string' });
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: 'No AI key configured' });
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const response = await ai.models.embedContent({
+      model: 'gemini-embedding-2',
+      contents: query
+    });
+    
+    let vec = response.embeddings?.[0]?.values || [];
+    if (vec.length < 1536) {
+      vec = [...vec, ...new Array(1536 - vec.length).fill(0)];
+    } else if (vec.length > 1536) {
+      vec = vec.slice(0, 1536);
+    }
+    
+    // Find top 5 functions closest to the query embedding
+    // Drizzle requires the vector to be formatted as an array for pgvector
+    const similarity = sql`1 - (${functions.embedding} <=> ${JSON.stringify(vec)}::vector)`;
+    const results = await db.select({
+      id: functions.id,
+      name: functions.name,
+      signature: functions.signature,
+      docstring: functions.docstring,
+      similarity
+    })
+    .from(functions)
+    .where(
+      sql`${functions.fileId} IN (SELECT id FROM "file" WHERE repository_id = ${req.params.id})`
+    )
+    .orderBy((t) => desc(t.similarity))
+    .limit(5);
+
+    res.json(results);
+  } catch (err) {
+    console.error('Search error', err);
+    res.status(500).json({ error: 'Failed to perform semantic search' });
   }
 });
 

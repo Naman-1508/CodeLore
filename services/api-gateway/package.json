@@ -8,11 +8,14 @@
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",
+    "@google/genai": "^2.13.0",
     "@repo/database": "*",
+    "bullmq": "^5.81.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.38.4",
     "express": "^4.22.2",
+    "ioredis": "^5.11.1",
     "pg": "^8.13.1"
   },
   "devDependencies": {
