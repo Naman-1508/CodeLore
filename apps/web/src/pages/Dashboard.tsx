@@ -75,6 +75,8 @@ export default function Dashboard() {
     };
     if (!repoId) {
       fetchExistingRepos();
+    } else {
+      checkStatus();
     }
     fetchDashboardData();
   }, [getToken, repoId]);
