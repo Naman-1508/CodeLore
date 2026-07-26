@@ -36,3 +36,11 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Local scripts and documentation
+test-*.ts
+test-*.js
+check-*.ts
+check-*.js
+seed.ts
+0*.md
