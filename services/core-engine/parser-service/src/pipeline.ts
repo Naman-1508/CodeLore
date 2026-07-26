@@ -115,7 +115,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
             startLine: fn.startLine,
             endLine: fn.endLine
           }))).onConflictDoUpdate({
-            target: [functions.fileId, functions.signature],
+            target: [functions.fileId, functions.name],
             set: { startLine: sql`EXCLUDED.start_line`, endLine: sql`EXCLUDED.end_line` }
           }).returning();
           
