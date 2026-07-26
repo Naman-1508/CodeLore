@@ -43,13 +43,11 @@ export class CodeStoryGenerator {
             `Function Name: ${fnData.name}`
           ];
 
-          pendingAiTasks.push(async (currentOrder: number) => {
-            const narration = await aiAdapter.generateDocstring(codeSnippet, contextFacts);
-            return {
-              order: currentOrder,
-              functionId: id,
-              narration
-            };
+          pendingAiTasks.push({
+            order: order,
+            id: id,
+            codeSnippet,
+            contextFacts
           });
 
           order++;
@@ -63,15 +61,16 @@ export class CodeStoryGenerator {
         }
       }
 
-      // Execute AI generation sequentially to avoid hitting rate limits (429)
-      const aiResults = [];
-      for (let index = 0; index < pendingAiTasks.length; index++) {
-        const task = pendingAiTasks[index];
-        aiResults.push(await task(index + 1));
-        // Add a 2s delay between requests to respect free-tier RPM limits
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-      const storySteps = aiResults.sort((a, b) => a.order - b.order);
+      // Execute AI generation in a single batch to avoid hitting RPM/Request quotas (429)
+      const batchResults = await aiAdapter.generateDocstringsBatch(pendingAiTasks);
+      const storySteps = pendingAiTasks.map(t => {
+        const result = batchResults.find(r => r.id === t.id);
+        return {
+          order: t.order,
+          functionId: t.id,
+          narration: result ? result.narration : "No narration available."
+        };
+      }).sort((a, b) => a.order - b.order);
 
       stories.push({
         title: `${entryPoint.name} Flow`,

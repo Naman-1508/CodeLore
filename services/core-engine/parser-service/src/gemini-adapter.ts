@@ -8,25 +8,34 @@ export class GeminiAdapter implements LLMProvider {
     this.ai = new GoogleGenAI({ apiKey });
   }
 
-  async generateDocstring(codeSnippet: string, contextFacts: string[]): Promise<string> {
-    console.log(`[GeminiAdapter] Generating docstring for snippet of length ${codeSnippet.length}`);
-    const prompt = `
-Context Facts:
-${contextFacts.map(f => `- ${f}`).join('\n')}
-
-Code Snippet:
-\`\`\`
-${codeSnippet}
-\`\`\`
-
-Generate a highly descriptive, architectural summary for the above code snippet. Focus ONLY on its purpose and its role in the larger system. Do NOT include any filler language, pleasantries, or introductory phrases (e.g. "Here is the summary", "This code snippet..."). Do NOT hallucinate dependencies not present in the code. Keep it to strictly 1-2 sentences of raw, factual technical description.`;
-
-    const response = await this.ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-    });
+  async generateDocstringsBatch(tasks: { id: string, codeSnippet: string, contextFacts: string[] }[]): Promise<{ id: string, narration: string }[]> {
+    console.log(`[GeminiAdapter] Generating docstrings in batch for ${tasks.length} snippets`);
     
-    return response.text || "No narration generated.";
+    if (tasks.length === 0) return [];
+
+    let prompt = `You are a strict technical code assistant. I will provide multiple code snippets. For each snippet, generate a highly descriptive, architectural summary. Focus ONLY on its purpose and its role in the larger system. Do NOT include filler language or hallucinate dependencies. Keep it strictly to 1-2 sentences.\n\n`;
+    prompt += `Return ONLY a valid JSON array of objects. Each object MUST have exactly two keys: "id" (the string ID provided) and "narration" (your summary string).\n\nSnippets:\n\n`;
+
+    tasks.forEach(t => {
+      prompt += `ID: ${t.id}\nContext: ${t.contextFacts.join(', ')}\nCode:\n\`\`\`\n${t.codeSnippet}\n\`\`\`\n\n`;
+    });
+
+    try {
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: prompt,
+      });
+      
+      const text = response.text || "[]";
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      return [];
+    } catch (e) {
+      console.error('[GeminiAdapter] Batch generation failed:', e);
+      return tasks.map(t => ({ id: t.id, narration: "AI generation failed due to quota or parsing error." }));
+    }
   }
 
   async chat(messages: ChatMessage[], contextFacts: string[]): Promise<string> {

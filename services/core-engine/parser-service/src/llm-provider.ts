@@ -4,7 +4,7 @@ export interface ChatMessage {
 }
 
 export interface LLMProvider {
-  generateDocstring(codeSnippet: string, contextFacts: string[]): Promise<string>;
+  generateDocstringsBatch(tasks: { id: string, codeSnippet: string, contextFacts: string[] }[]): Promise<{ id: string, narration: string }[]>;
   chat(messages: ChatMessage[], contextFacts: string[]): Promise<string>;
   generateEmbedding?(text: string): Promise<number[]>;
 }
