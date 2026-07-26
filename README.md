@@ -1,7 +1,7 @@
 # 🌌 CodeLore
 
 <div align="center">
-  <img src="https://via.placeholder.com/1200x300/0f172a/38bdf8?text=CodeLore+|+Understand+Codebases+in+Minutes" alt="CodeLore Banner">
+  <img src="https://placehold.co/1200x300/0f172a/38bdf8.png?text=CodeLore+|+Understand+Codebases+in+Minutes" alt="CodeLore Banner">
 </div>
 
 <p align="center">
