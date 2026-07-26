@@ -7,7 +7,7 @@ export default function ContributionFinder() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const REPO_ID = 'repo-123'; 
+  const REPO_ID = localStorage.getItem('codelore_active_repo') || ''; 
 
   useEffect(() => {
     const fetchData = async () => {

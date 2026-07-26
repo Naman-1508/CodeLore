@@ -10,7 +10,7 @@ export default function CodeStoryViewer() {
   const [loading, setLoading] = useState(true);
 
   // We hardcode a repository ID for the MVP dashboard
-  const REPO_ID = 'repo-123'; 
+  const REPO_ID = localStorage.getItem('codelore_active_repo') || ''; 
 
   useEffect(() => {
     const fetchStory = async () => {

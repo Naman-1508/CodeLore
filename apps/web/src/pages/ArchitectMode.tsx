@@ -29,12 +29,15 @@ export default function ArchitectMode() {
 
         // 1. Fetch repositories
         const repoRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories`, { headers });
-        let repoId = null;
+        let repoId = localStorage.getItem('codelore_active_repo');
         if (repoRes.ok) {
            const repos = await repoRes.json();
            if (repos.length > 0) {
-             repoId = repos[0].id;
              setRepositories(repos);
+             if (!repoId) {
+               repoId = repos[0].id;
+               localStorage.setItem('codelore_active_repo', repoId as string);
+             }
            }
         }
         

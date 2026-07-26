@@ -8,7 +8,7 @@ export default function SemanticSearch() {
   const [results, setResults] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const REPO_ID = 'repo-123'; 
+  const REPO_ID = localStorage.getItem('codelore_active_repo') || ''; 
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();

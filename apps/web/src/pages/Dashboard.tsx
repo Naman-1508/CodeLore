@@ -10,7 +10,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [repoUrl, setRepoUrl] = useState('https://github.com/expressjs/express');
   const [indexingStatus, setIndexingStatus] = useState<string | null>(null);
-  const [repoId, setRepoId] = useState<string | null>(null);
+  const [repoId, setRepoId] = useState<string | null>(() => localStorage.getItem('codelore_active_repo'));
   const [importLoading, setImportLoading] = useState(false);
 
   const fetchDashboardData = async () => {
@@ -93,6 +93,7 @@ export default function Dashboard() {
       if (res.ok) {
         const newRepo = await res.json();
         setRepoId(newRepo.id);
+        localStorage.setItem('codelore_active_repo', newRepo.id);
         setIndexingStatus(newRepo.indexingStatus);
       }
     } catch(e) {
