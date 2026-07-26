@@ -19,7 +19,7 @@ Code Snippet:
 ${codeSnippet}
 \`\`\`
 
-Generate a highly descriptive, architectural summary for the above code snippet. Focus on its purpose and its role in the larger system. Do not write a traditional JSDoc comment. Keep it to 2-3 sentences.`;
+Generate a highly descriptive, architectural summary for the above code snippet. Focus ONLY on its purpose and its role in the larger system. Do NOT include any filler language, pleasantries, or introductory phrases (e.g. "Here is the summary", "This code snippet..."). Do NOT hallucinate dependencies not present in the code. Keep it to strictly 1-2 sentences of raw, factual technical description.`;
 
     const response = await this.ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -32,7 +32,7 @@ Generate a highly descriptive, architectural summary for the above code snippet.
   async chat(messages: ChatMessage[], contextFacts: string[]): Promise<string> {
     console.log(`[GeminiAdapter] Chatting with Gemini API`);
     
-    const contextPrompt = `Context Facts:\n${contextFacts.map(f => `- ${f}`).join('\n')}\n\n`;
+    const contextPrompt = `You are a strict technical code assistant. Answer the user's questions based strictly on the provided Context Facts. Do not hallucinate logic, functions, or files not present in the context. Do not use filler words or pleasantries; provide direct, concise, factual answers.\n\nContext Facts:\n${contextFacts.map(f => `- ${f}`).join('\n')}\n\n`;
     
     // We append context to the last message if available
     const mappedMessages = messages.map(m => m.content);
