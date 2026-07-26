@@ -320,7 +320,7 @@ app.post('/v1/repositories/:id/search', async (req, res) => {
     
     // Find top 5 functions closest to the query embedding
     // Drizzle requires the vector to be formatted as an array for pgvector
-    const similarity = sql`1 - (${functions.embedding} <=> ${JSON.stringify(vec)}::vector)`;
+    const similarity = sql`1 - (${functions.embedding} <=> ${JSON.stringify(vec)}::vector)` as any;
     const results = await db.select({
       id: functions.id,
       name: functions.name,
@@ -330,9 +330,9 @@ app.post('/v1/repositories/:id/search', async (req, res) => {
     })
     .from(functions)
     .where(
-      sql`${functions.fileId} IN (SELECT id FROM "file" WHERE repository_id = ${req.params.id})`
+      sql`${functions.fileId} IN (SELECT id FROM "file" WHERE repository_id = ${req.params.id})` as any
     )
-    .orderBy((t) => desc(t.similarity))
+    .orderBy((t: any) => desc(t.similarity) as any)
     .limit(5);
 
     res.json(results);
