@@ -280,9 +280,9 @@ app.get('/v1/repositories/:id/health', async (req, res) => {
       const scoreNum = Number(snap.score);
       res.json({ 
         status: scoreNum > 70 ? 'healthy' : 'warning', 
-        issues: metrics.deadFunctions || 0,
+        issues: metrics.deadCodeCount || 0,
         modularityScore: scoreNum,
-        couplingIndex: 0
+        couplingIndex: metrics.couplingIndex || 0
       });
     } catch {
       res.json(null);

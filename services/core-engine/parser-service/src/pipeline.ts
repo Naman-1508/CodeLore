@@ -210,7 +210,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
         
         const actualStories = await CodeStoryGenerator.generateBaselineStories(
           repositoryId, 
-          entryPoints.slice(0, 1), 
+          entryPoints.slice(0, 5), 
           edgesToInsert, 
           functionsDbMap, 
           aiAdapter

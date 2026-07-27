@@ -68,8 +68,8 @@ export default function ArchitectMode() {
 
           const flowEdges = edges.map((e: any) => ({
             id: e.id,
-            source: e.callerId,
-            target: e.calleeId,
+            source: e.callerFunctionId,
+            target: e.calleeFunctionId,
             animated: true,
             style: { stroke: '#06b6d4' } // cyan
           }));
