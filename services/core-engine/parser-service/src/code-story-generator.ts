@@ -67,11 +67,38 @@ export class CodeStoryGenerator {
         batchResults = await aiAdapter.generateDocstringsBatch(pendingAiTasks);
       } catch (err: any) {
         console.error("AI generation failed for stories due to quota or error. Using fallback.", err.message);
-        // Fallback to deterministic narratives
-        batchResults = pendingAiTasks.map(t => ({
-          id: t.id,
-          narration: `Step ${t.order}: execution flows through ${t.contextFacts[2].replace('Function Name: ', '')}.`
-        }));
+        // Smart AST Fallback: generate a detailed summary based purely on function data and call edges
+        batchResults = pendingAiTasks.map(t => {
+          const fnData = functionsDbMap.get(t.id);
+          const name = fnData?.name || 'unknown';
+          
+          // Get called functions (outgoing edges)
+          const outEdges = graph.get(t.id) || [];
+          const outCalls = outEdges
+            .map(calleeId => functionsDbMap.get(calleeId)?.name)
+            .filter(Boolean) as string[];
+          
+          // Construct deterministic narrative
+          let narration = `The function \`${name}\` begins execution.`;
+          
+          if (outCalls.length > 0) {
+            const uniqueCalls = [...new Set(outCalls)];
+            if (uniqueCalls.length === 1) {
+              narration += ` It makes a downstream call to \`${uniqueCalls[0]}\`.`;
+            } else {
+              const displayCalls = uniqueCalls.slice(0, 3).map(c => `\`${c}\``).join(', ');
+              const extras = uniqueCalls.length > 3 ? ' and others' : '';
+              narration += ` Execution branches out to internal calls: ${displayCalls}${extras}.`;
+            }
+          } else {
+            narration += ` It computes and completes its task without delegating to other known functions.`;
+          }
+
+          return {
+            id: t.id,
+            narration
+          };
+        });
       }
       const storySteps = pendingAiTasks.map(t => {
         const result = batchResults.find(r => r.id === t.id);
