@@ -124,7 +124,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
           startLine: fn.startLine, 
           endLine: fn.endLine, 
           calls: fn.calls,
-          isEntryPoint: isRouteFile && !!fn.isExported
+          isEntryPoint: !!fn.isExported
         }));
       });
 

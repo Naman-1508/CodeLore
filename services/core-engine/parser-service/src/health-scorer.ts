@@ -28,7 +28,7 @@ export class HealthScorer {
     // Dead Code Detection (FR-6)
     // Find functions with 0 incoming edges that are not likely entry points (e.g. exports)
     const calleeIds = new Set(callEdges.map(e => e.calleeFunctionId));
-    const deadFunctions = functions.filter(fn => !calleeIds.has(fn.id) && !fn.signature.includes('export'));
+    const deadFunctions = functions.filter(fn => !calleeIds.has(fn.id) && !fn.isEntryPoint);
     
     const deadCodeCount = deadFunctions.length;
     if (deadCodeCount > 0) {

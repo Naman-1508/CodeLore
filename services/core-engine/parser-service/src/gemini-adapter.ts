@@ -34,7 +34,7 @@ export class GeminiAdapter implements LLMProvider {
       return [];
     } catch (e) {
       console.error('[GeminiAdapter] Batch generation failed:', e);
-      return tasks.map(t => ({ id: t.id, narration: "AI generation failed due to quota or parsing error." }));
+      throw e;
     }
   }
 
