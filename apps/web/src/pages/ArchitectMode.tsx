@@ -41,13 +41,18 @@ export default function ArchitectMode() {
         
         if (!repoId) return;
 
-        // 2. Fetch functions for this repo
-        const funcRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${repoId}/functions`, { headers });
+        // 2. Fetch functions and edges for this repo
+        const [funcRes, edgesRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${repoId}/functions`, { headers }),
+          fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/v1/repositories/${repoId}/edges`, { headers })
+        ]);
+        
         if (funcRes.ok) {
           const funcs = await funcRes.json();
+          const edges = edgesRes.ok ? await edgesRes.json() : [];
           
-          // Let's create flow nodes. Limit to 50 for performance in MVP
-          const flowNodes = funcs.slice(0, 50).map((f: any, index: number) => ({
+          // Let's create flow nodes.
+          const flowNodes = funcs.map((f: any, index: number) => ({
             id: f.id,
             position: { x: (index % 5) * 250, y: Math.floor(index / 5) * 150 },
             data: { label: f.name },
@@ -61,20 +66,13 @@ export default function ArchitectMode() {
           }));
           setNodes(flowNodes);
 
-          // We'd also fetch edges here if the API provided it. For MVP we'll just show the nodes
-          // or simulate some edges
-          const flowEdges = [];
-          for (let i = 0; i < flowNodes.length - 1; i++) {
-            if (Math.random() > 0.7) {
-              flowEdges.push({
-                id: `e-${flowNodes[i].id}-${flowNodes[i+1].id}`,
-                source: flowNodes[i].id,
-                target: flowNodes[i+1].id,
-                animated: true,
-                style: { stroke: '#06b6d4' } // cyan
-              });
-            }
-          }
+          const flowEdges = edges.map((e: any) => ({
+            id: e.id,
+            source: e.callerId,
+            target: e.calleeId,
+            animated: true,
+            style: { stroke: '#06b6d4' } // cyan
+          }));
           setEdges(flowEdges);
         }
       } catch (e) {

@@ -195,8 +195,9 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
 
     // Generate Code Stories
     if (process.env.GEMINI_API_KEY) {
-      const aiAdapter = new GeminiAdapter(process.env.GEMINI_API_KEY);
-      // Mock finding an entry point (e.g. index.ts or main)
+      try {
+        const aiAdapter = new GeminiAdapter(process.env.GEMINI_API_KEY);
+        // Mock finding an entry point (e.g. index.ts or main)
       let entryPoints = repoFunctions.filter(f => f.isEntryPoint);
       if (entryPoints.length === 0) {
         entryPoints = repoFunctions.slice(0, 3);
@@ -232,6 +233,9 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
             });
           }
         }
+      }
+      } catch (aiErr) {
+        console.error("AI Generation skipped due to error (e.g. quota limit):", aiErr.message);
       }
     }
 

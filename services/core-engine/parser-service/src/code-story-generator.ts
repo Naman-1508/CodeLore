@@ -62,7 +62,17 @@ export class CodeStoryGenerator {
       }
 
       // Execute AI generation in a single batch to avoid hitting RPM/Request quotas (429)
-      const batchResults = await aiAdapter.generateDocstringsBatch(pendingAiTasks);
+      let batchResults: {id: string, narration: string}[] = [];
+      try {
+        batchResults = await aiAdapter.generateDocstringsBatch(pendingAiTasks);
+      } catch (err) {
+        console.error("AI generation failed for stories due to quota or error. Using fallback.", err.message);
+        // Fallback to deterministic narratives
+        batchResults = pendingAiTasks.map(t => ({
+          id: t.id,
+          narration: `Step ${t.order}: execution flows through ${t.contextFacts[2].replace('Function Name: ', '')}.`
+        }));
+      }
       const storySteps = pendingAiTasks.map(t => {
         const result = batchResults.find(r => r.id === t.id);
         return {

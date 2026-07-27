@@ -176,6 +176,18 @@ app.get('/v1/repositories/:id/functions', async (req, res) => {
   }
 });
 
+app.get('/v1/repositories/:id/edges', async (req, res) => {
+  try {
+    const edges = await db.query.callEdges.findMany({
+      where: eq(callEdges.repositoryId, req.params.id)
+    });
+    res.json(edges);
+  } catch (err) {
+    console.error('Edges error:', err);
+    res.status(500).json({ error: 'Failed to fetch edges' });
+  }
+});
+
 // --- Architect Findings & Git Signals Routes (Phase 2) ---
 app.get('/v1/repositories/:id/architect-findings', async (req, res) => {
   try {
