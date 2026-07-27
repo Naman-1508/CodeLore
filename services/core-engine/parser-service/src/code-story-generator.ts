@@ -65,7 +65,7 @@ export class CodeStoryGenerator {
       let batchResults: {id: string, narration: string}[] = [];
       try {
         batchResults = await aiAdapter.generateDocstringsBatch(pendingAiTasks);
-      } catch (err) {
+      } catch (err: any) {
         console.error("AI generation failed for stories due to quota or error. Using fallback.", err.message);
         // Fallback to deterministic narratives
         batchResults = pendingAiTasks.map(t => ({

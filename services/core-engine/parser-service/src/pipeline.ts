@@ -234,7 +234,7 @@ export async function runParsingPipeline(repositoryId: string, remoteUrl: string
           }
         }
       }
-      } catch (aiErr) {
+      } catch (aiErr: any) {
         console.error("AI Generation skipped due to error (e.g. quota limit):", aiErr.message);
       }
     }
